@@ -1,0 +1,9 @@
+
+Dependencies
+------------
+
+python2.7
+matplotlib
+numpy
+colorama
+
