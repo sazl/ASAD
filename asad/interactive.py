@@ -717,7 +717,7 @@ class Run_Shell(Object_Shell):
             self.observation.do_set_wavelength_range(wl_range)
         except Exception as err:
             print('Enter a new wavelength range!')
-            self.model_wavelength_range()
+            self.observation_wavelength_range()
             raise err
 
     @prompt_command
@@ -844,7 +844,8 @@ class Run_Shell(Object_Shell):
             self.observation_smoothen_output()
         if parse_input_yn('Observation reddening correction', default=True):
             self.observation_reddening()
-        self.observation_wavelength_range()
+        if parse_input_yn('Observation set wavelength range (Angstroms)', default=True):
+            self.observation_wavelength_range()
         if parse_input_yn('Observation normalize', default=True):
             self.observation_normalize_wavelength()
         if parse_input_yn('Output observations'):
