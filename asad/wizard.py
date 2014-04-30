@@ -327,12 +327,14 @@ class ObservationPage(QtGui.QWizardPage):
         globalConfig['observation_wavelength_start'] = self.wavelength_start
         globalConfig['observation_wavelength_end'] = self.wavelength_end
         globalConfig['observation_normalize_wavelength'] = self.wavelength_normalize
+        globalConfig['observation_smoothen_output_directory'] = self.observation_output_combo_box.currentText()
         globalConfig['observation_output_directory'] = self.observation_output_combo_box.currentText()
         globalConfig.write_config_file()
         runShell = getRunShell()
         runShell.observation_read()
         runShell.observation_interpolation_wavelength_start()
-        runShell.observation_smoothen()        
+        runShell.observation_smoothen()
+        runShell.observation_smoothen_output()
         runShell.observation_reddening()
         runShell.observation_wavelength_range()
         runShell.observation_normalize_wavelength()

@@ -684,6 +684,15 @@ class Run_Shell(Object_Shell):
         self.observation.do_smoothen(self.config['observation_interpolation_step'])
 
     @prompt_command
+    def observation_smoothen_output(self):
+        self.config['observation_output_directory'] = safe_default_input(
+            'Smoothed Output directory',
+            self.config['observation_smoothed_output_directory'])
+        self.observation.do_write(
+            self.config['observation_smoothed_output_directory'],
+            prefix='smoothed_')
+
+    @prompt_command
     def observation_reddening(self):
         self.config['observation_reddening_start'] = safe_default_input(
             'Reddening Start',
@@ -702,8 +711,8 @@ class Run_Shell(Object_Shell):
     @prompt_command
     def observation_wavelength_range(self):
         try:
-            wl_range = '(%s, %s)' %  (self.config['model_wavelength_start'],
-                                      self.config['model_wavelength_end'])
+            wl_range = '(%s, %s)' %  (self.config['observation_wavelength_start'],
+                                      self.config['observation_wavelength_end'])
             print('Setting observation wavelength range to %s' % wl_range)
             self.observation.do_set_wavelength_range(wl_range)
         except Exception as err:
@@ -831,6 +840,8 @@ class Run_Shell(Object_Shell):
             self.observation_interpolation_wavelength_start()
         if parse_input_yn('Smooth the observation', default=True):
             self.observation_smoothen()
+        if parse_input_yn('Output smoothed observations'):
+            self.observation_smoothen_output()
         if parse_input_yn('Observation reddening correction', default=True):
             self.observation_reddening()
         self.observation_wavelength_range()
