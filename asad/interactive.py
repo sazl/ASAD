@@ -685,11 +685,11 @@ class Run_Shell(Object_Shell):
 
     @prompt_command
     def observation_smoothen_output(self):
-        self.config['observation_output_directory'] = safe_default_input(
+        self.config['observation_smoothen_output_directory'] = safe_default_input(
             'Smoothed Output directory',
-            self.config['observation_smoothed_output_directory'])
+            self.config['observation_smoothen_output_directory'])
         self.observation.do_write(
-            self.config['observation_smoothed_output_directory'],
+            self.config['observation_smoothen_output_directory'],
             prefix='smoothed_')
 
     @prompt_command
