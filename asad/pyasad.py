@@ -351,7 +351,7 @@ class Observation(Base):
     def smoothen(self, interp, name='', step=0):
         if step <= 0:
             step = self.wavelength_step
-        result = self.Observation(name=name)
+        result = Observation(name=name)
         result.wavelength = Math.wavelength_interpolate_step_obsv(
             self.wavelength, interp, step)
         result.flux = Math.flux_interpolate_step_obsv(self.flux, interp, step)
