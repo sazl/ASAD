@@ -25,6 +25,25 @@ class Math(object):
         return result
 
     @staticmethod
+    def wavelength_interpolate_step_obsv(xs, interp=3, step=0.3):
+        if interp == step:
+            return xs
+
+        sample_step = interp / step
+        nsample     = int(2*sample_step - 1)
+        result_num  = int((len(xs)/sample_step) - 1)
+        result      = np.zeros([result_num])
+        xs2         = xs[1:]
+
+        for i in range(result_num):
+            tot = 0
+            for k in range(nsample):
+                tot += xs2[i*sample_step + k]
+            result[i] = tot / nsample
+
+        return np.append(np.array([xs[0]]), result)
+
+    @staticmethod
     def flux_interpolate_step(xss, interp, step):
         if interp == step:
             return xss
@@ -46,6 +65,30 @@ class Math(object):
                 result[i, j] = tot / nsample
 
         return result
+
+    @staticmethod
+    def flux_interpolate_step_obsv(xss, interp, step):
+        if interp == step:
+            return xss
+
+        sample_step  = interp / step
+        nsample      = int(2*sample_step - 1)
+        result_nrows = xss.shape[0] - 1
+        result_ncols = int((xss.shape[1] / sample_step) - 1)
+        result       = np.zeros([result_nrows, result_ncols])
+        xss2         = xss[1:]
+
+        for i in range(result_nrows):
+            row = xss2[i]
+            for j in range(result_ncols):
+                tot = 0
+                num = j * sample_step
+                sample = row[num:num+nsample]
+                for k in range(nsample):
+                    tot += sample[k]
+                result[i, j] = tot / nsample
+
+        return np.vstack([xss[0], result])
 
 #===============================================================================
 
@@ -303,6 +346,15 @@ class Observation(Base):
     def reddening_shift(self, reddening, step):
         result = copy.deepcopy(self)
         result.flux = self.find_flux(reddening, step)
+        return result
+
+    def smoothen(self, interp, name='', step=0):
+        if step <= 0:
+            step = self.wavelength_step
+        result = self.Observation(name=name)
+        result.wavelength = Math.wavelength_interpolate_step_obsv(
+            self.wavelength, interp, step)
+        result.flux = Math.flux_interpolate_step_obsv(self.flux, interp, step)
         return result
 
     @property
