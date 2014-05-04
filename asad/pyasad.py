@@ -71,24 +71,23 @@ class Math(object):
         if interp == step:
             return xss
 
-        sample_step  = interp / step
-        nsample      = int(2*sample_step - 1)
-        result_nrows = xss.shape[0] - 1
-        result_ncols = int((xss.shape[1] / sample_step) - 1)
-        result       = np.zeros([result_nrows, result_ncols])
-        xss2         = xss[1:]
+        sample_step     = interp / step
+        nsample         = int(2*sample_step - 1)
+        result_ncols    = int((xss.shape[1] / sample_step) - 1)
+        result          = np.zeros([result_ncols])
+        row             = xss[0]
+        first, row_rest = row[0], row[1:]
+        
+        for i in range(result_ncols):
+            tot = 0
+            num = i * sample_step
+            sample = row_rest[num:num+nsample]
+            for k in range(nsample):
+                tot += sample[k]
+            result[i] = tot / nsample
 
-        for i in range(result_nrows):
-            row = xss2[i]
-            for j in range(result_ncols):
-                tot = 0
-                num = j * sample_step
-                sample = row[num:num+nsample]
-                for k in range(nsample):
-                    tot += sample[k]
-                result[i, j] = tot / nsample
-
-        return np.vstack([xss[0], result])
+        result = np.append(np.array([first]), result)
+        return np.array([result])
 
 #===============================================================================
 
