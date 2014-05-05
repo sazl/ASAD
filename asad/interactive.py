@@ -840,6 +840,8 @@ class Run_Shell(Object_Shell):
             self.observation_interpolation_wavelength_start()
         if parse_input_yn('Smooth the observation', default=True):
             self.observation_smoothen()
+        if parse_input_yn('Observation set wavelength range (Angstroms)', default=True):
+            self.observation_wavelength_range()
         if parse_input_yn('Output smoothed observations'):
             self.observation_smoothen_output()
         if parse_input_yn('Observation reddening correction', default=True):
