@@ -279,6 +279,8 @@ class Base_Shell(Shell):
     def do_wavelength_index(self, arg):
         try:
             (start, end) = parse_tuple_int(arg, expected=2)
+            if end == -1:
+                end = None
             for base in self.values:
                 pprint(base.wavelength[start:end])
         except ValueError as value_error:
@@ -722,7 +724,7 @@ class Run_Shell(Object_Shell):
     @prompt_command
     def observation_wavelength_range_2(self):
         print('Current Wavelength Range: ')
-        self.model.do_wavelength_index('(0, -1)')
+        self.observation.do_wavelength_index('(0, -1)')
         self.config['observation_wavelength_start'] = safe_default_input(
             'Wavelength Start (Angstroms)',
             self.config['model_wavelength_start'])
