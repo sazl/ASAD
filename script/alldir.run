@@ -1,11 +1,8 @@
-model read "data/models/Before.txt"
+model read "data/models/"
+model interpolation_wavelength_start 3002.3
 model smoothen 3
+model set wavelength_range (3638, 6890)
 model normalize 5870
-model set wavelength_range (3626, 6700)
-model set wavelength_index (0, 869)
-model set age_start 6.6
-model set age_factor 0.05
-model set name 'After.txt'
 model write 'data/models'
 
 observation directory 'data/observations'

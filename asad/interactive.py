@@ -727,7 +727,7 @@ class Run_Shell(Object_Shell):
         self.observation.do_wavelength_index('(0, -1)')
         self.config['observation_wavelength_start'] = safe_default_input(
             'Wavelength Start (Angstroms)',
-            self.config['model_wavelength_start'])
+            self.config['observation_wavelength_start'])
         self.config['observation_wavelength_end'] = safe_default_input(
             'Wavelength End (Angstroms)',
             self.config['observation_wavelength_end'])
