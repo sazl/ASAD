@@ -282,7 +282,7 @@ class Base_Shell(Shell):
             if end == -1:
                 end = None
             for base in self.values:
-                pprint(base.wavelength[start:end])
+                print(base.wavelength_str(start, end))
         except ValueError as value_error:
             error_print('wavelength index needs 2 args: (start, end)')
             raise value_error
@@ -721,6 +721,7 @@ class Run_Shell(Object_Shell):
             print('Enter a new wavelength range!')
             self.observation_wavelength_range()
             raise err
+
     @prompt_command
     def observation_wavelength_range_2(self):
         print('Current Wavelength Range: ')

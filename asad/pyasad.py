@@ -165,6 +165,13 @@ class Base(object):
         result.name = self.name
         return result
 
+    def wavelength_str(self, start, end):
+        wl = self.wavelength[start:end]
+        if len(wl) <= 10:
+            return str(wl)
+        else:
+            return "[{}, {}, {}, ..., {}]".format(wl[0], wl[1], wl[2], wl[-1])
+
     def wavelength_index(self, start, end):
         if start > end:
             raise(IndexError("start = {} is greater than end = {}".format(
