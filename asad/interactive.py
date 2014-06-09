@@ -732,7 +732,7 @@ class Run_Shell(Object_Shell):
         self.config['observation_wavelength_end'] = safe_default_input(
             'Wavelength End (Angstroms)',
             self.config['observation_wavelength_end'])
-        self.model.do_set_wavelength_range('(%s, %s)' % (
+        self.observation.do_set_wavelength_range('(%s, %s)' % (
             self.config['observation_wavelength_start'],
             self.config['observation_wavelength_end']))
 

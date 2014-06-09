@@ -165,7 +165,7 @@ class Base(object):
         result.name = self.name
         return result
 
-    def wavelength_str(self, start, end):
+    def wavelength_str(self, start=None, end=None):
         wl = self.wavelength[start:end]
         if len(wl) <= 10:
             return str(wl)
@@ -206,11 +206,11 @@ class Base(object):
 
     def wavelength_set_start(self, start):
         index_start = np.searchsorted(self.wavelength, start)
-        return self.wavelength_set_index(index_start, -1)
+        return self.wavelength_set_index(index_start, None)
 
     def wavelength_set_end(self, start):
         index_end = np.searchsorted(self.wavelength, end)
-        return self.wavelength_set_index(0, index_end)
+        return self.wavelength_set_index(0, index_end+1)
 
     def restrict_wavelength(self, wavelength):
         index = np.searchsorted(self.wavelength, wavelength)
@@ -219,7 +219,11 @@ class Base(object):
     
     def wavelength_set_range(self, start, end):
         (index_start, index_end) = self.wavelength_index(start, end)
-        return self.wavelength_set_index(index_start, index_end+1)
+        print("{} {}".format(index_start, self.wavelength[index_start]))
+        print("{} {}".format(index_end, self.wavelength[index_end]))
+        x = self.wavelength_set_index(index_start, index_end+1)
+        print(x.wavelength_str())
+        return x
 
     def smoothen(self, interp, name='', step=0):
         if step <= 0:
@@ -239,7 +243,7 @@ class Base(object):
 
     @property
     def wavelength_step(self):
-        return self._wavelength_step
+        return self.wavelength[1] - self.wavelength[0]
     @wavelength_step.setter
     def wavelength_step(self, wavelength_step):
         self._wavelength_step = wavelength_step
@@ -368,11 +372,13 @@ class Observation(Base):
     def reddening_shift(self, reddening, step):
         result = copy.deepcopy(self)
         result.flux = self.find_flux(reddening, step)
+        print(result.wavelength_str())
         return result
 
     def smoothen(self, interp, name='', step=0):
         if step <= 0:
             step = self.wavelength_step
+        print('!!!!!!!!! {} {}'.format(step, interp))
         result = Observation(name=name)
         result.wavelength = Math.wavelength_interpolate_step_obsv(
             self.wavelength, interp, step)
