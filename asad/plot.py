@@ -89,10 +89,13 @@ def scatter(obj, ages=[], reddenings=[], outdir='',
     model = obj.model
     obsv = obj.observation
 
-    model_index = np.searchsorted(model.age, ages)
-    if not model_index: model_index = [obj.min_model]
-    obsv_index = np.searchsorted(obsv.reddening, reddenings)
-    if not obsv_index: obsv_index = [obj.min_observation]
+    def find_indices(values, target):
+        return np.searchsorted(values, target)
+    
+    model_index = find_indices(model.age, ages)-1
+    if len(model_index) == 0: model_index = [obj.min_model]
+    obsv_index = find_indices(obsv.reddening, reddenings)
+    if len(obsv_index) == 0: obsv_index = [obj.min_observation]
 
     for mi in model_index:
         model_label = 'Model: age=%s' % (model.age[mi])
@@ -200,9 +203,7 @@ def surface_error(obj, levels=15, outdir='',
     cb = fig.colorbar(CF)
     cb.set_label("Inverse Chi-Squared Statistic")
     plt.scatter([obj.min_age], [obj.min_reddening], c='w', s=350, marker="*")
-#    print "Min stat: %lf" % obj.min_stat
     for error_age, error_reddening, error_stat in zip(obj.error_age, obj.error_reddening, obj.error_stat):
-#        print [error_age, error_reddening, error_stat]
         plt.plot([error_age], [error_reddening], 'ro')
 
     plt.xlim([obj.model.age[0], obj.model.age[-1]])

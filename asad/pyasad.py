@@ -2,7 +2,6 @@ from __future__ import print_function
 import copy, io, os, os.path, uuid
 import numpy as np
 
-
 #===============================================================================
 
 class Math(object):
@@ -42,15 +41,7 @@ class Math(object):
                 tot += xs2[i*sample_step + k]
             result[i] = tot / nsample
 
-        r = np.append(np.array([xs[0]]), result)
-        with open('test123.txt', 'w') as f:
-            print(sample_step, file=f)
-            print(nsample, file=f)
-            print(result_num, file=f)
-            print(r.shape, file=f)
-            print('\n------\n', file=f)
-        
-        return r
+        return np.append(np.array([xs[0]]), result)
 
     @staticmethod
     def flux_interpolate_step(xss, interp, step):
@@ -96,14 +87,7 @@ class Math(object):
             result[i] = tot / nsample
 
         result = np.append(np.array([first]), result)
-        r = np.array([result])
-        with open('test123.txt', 'a') as f:
-            print(sample_step, file=f)
-            print(nsample, file=f)
-            print(result_ncols, file=f)
-            print(r.shape, file=f)
-        
-        return r
+        return np.array([result])
 
 #===============================================================================
 
@@ -378,7 +362,6 @@ class Observation(Base):
     def smoothen(self, interp, name='', step=0):
         if step <= 0:
             step = self.wavelength_step
-        print('!!!!!!!!! {} {}'.format(step, interp))
         result = Observation(name=name)
         result.wavelength = Math.wavelength_interpolate_step_obsv(
             self.wavelength, interp, step)
