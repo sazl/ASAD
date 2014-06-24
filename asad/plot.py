@@ -1,4 +1,4 @@
-import os.path, sys
+import os.path, re, sys
 
 import numpy              as np
 import matplotlib         as mpl
@@ -24,6 +24,18 @@ font = {
     'fontname' : 'Sans',
     'fontsize' : 22
 }
+
+def model_name_format(model_name):
+    m = re.match('\.z(\d{3})', model_name)
+    if not m:
+        return model_name
+    else:
+        return 'z=%s' % m.group(1)
+
+def title_format(obj):
+    model_name = obj.model.name
+    observation_name = obj.observation.name
+    return '[ {} with {} ]',format(observation_name, model_name)
 
 def surface(obj, levels=15, outdir="",
             fname='',
@@ -57,7 +69,7 @@ def surface(obj, levels=15, outdir="",
     plt.xlim([obj.model.age[0], obj.model.age[-1]])
     plt.ylim([obj.observation.reddening[0], obj.observation.reddening[-1]])
     
-    plt.title(obj.name, **font)
+    plt.title(title_format(obj), **font)
     plt.xlabel("log(Age/Year)", **font)
     plt.ylabel("Reddening", **font)
     
@@ -107,7 +119,7 @@ def scatter(obj, ages=[], reddenings=[], outdir='',
         plt.plot(obsv.wavelength, obsv.flux[oi],
                  label=obsv_label, linewidth=0.5)
 
-    plt.title('Flux vs Wavelength\n[' + obj.name + ']')
+    plt.title('Flux vs Wavelength\n' + title_format(obj))
     plt.xlabel("Wavelength (Angstroms)")
     plt.ylabel("Normalized Flux")
     plt.legend(loc='upper right', shadow=False, prop={'size':8})
@@ -139,7 +151,7 @@ def residual(obj, outdir='',
 
     ax1.plot(model.wavelength, model.flux[obj.min_model],
              label="Model Flux", linewidth=0.5)
-    ax1.set_title('Normalized Flux vs Wavelength\n[' + obj.name + ']')
+    ax1.set_title('Normalized Flux vs Wavelength\n' + title_format(obj))
     ax1.tick_params(which='major', labelsize=8)
     ax1.legend(loc='upper right', shadow=False, prop={'size':7})
 
@@ -209,7 +221,7 @@ def surface_error(obj, levels=15, outdir='',
     plt.xlim([obj.model.age[0], obj.model.age[-1]])
     plt.ylim([obj.observation.reddening[0], obj.observation.reddening[-1]])
     
-    plt.title(obj.name, **font)
+    plt.title(title_format(obj), **font)
     plt.xlabel("log(Age/Year)", **font)
     plt.ylabel("Reddening", **font)
     

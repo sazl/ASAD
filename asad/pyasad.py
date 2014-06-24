@@ -203,10 +203,7 @@ class Base(object):
     
     def wavelength_set_range(self, start, end):
         (index_start, index_end) = self.wavelength_index(start, end)
-        print("{} {}".format(index_start, self.wavelength[index_start]))
-        print("{} {}".format(index_end, self.wavelength[index_end]))
         x = self.wavelength_set_index(index_start, index_end+1)
-        print(x.wavelength_str())
         return x
 
     def smoothen(self, interp, name='', step=0):

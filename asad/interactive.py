@@ -672,17 +672,12 @@ class Run_Shell(Object_Shell):
 
     @prompt_command
     def observation_interpolation_wavelength_start(self):
-        self.config['observation_interpolation_wavelength_start'] = safe_default_input(
-            'Interpolation Wavelength Start',
-            self.config['observation_interpolation_wavelength_start'])
-        self.observation.do_interpolation_wavelength_start(
-            self.config['observation_interpolation_wavelength_start'])
+        self.config['observation_interpolation_wavelength_start'] = self.config['model_interpolation_wavelength_start']
+        self.observation.do_interpolation_wavelength_start(self.config['observation_interpolation_wavelength_start'])
 
     @prompt_command
     def observation_smoothen(self):
-        self.config['observation_interpolation_step'] = safe_default_input(
-            'Interpolation Step',
-            self.config['observation_interpolation_step'])
+        self.config['observation_interpolation_step'] = self.config['model_interpolation_step']
         self.observation.do_smoothen(self.config['observation_interpolation_step'])
 
     @prompt_command
@@ -726,23 +721,16 @@ class Run_Shell(Object_Shell):
     def observation_wavelength_range_2(self):
         print('Current Wavelength Range: ')
         self.observation.do_wavelength_index('(0, -1)')
-        self.config['observation_wavelength_start'] = safe_default_input(
-            'Wavelength Start (Angstroms)',
-            self.config['observation_wavelength_start'])
-        self.config['observation_wavelength_end'] = safe_default_input(
-            'Wavelength End (Angstroms)',
-            self.config['observation_wavelength_end'])
+        self.config['observation_wavelength_start'] = self.config['model_wavelength_start']
+        self.config['observation_wavelength_end'] = self.config['model_wavelength_end']
         self.observation.do_set_wavelength_range('(%s, %s)' % (
             self.config['observation_wavelength_start'],
             self.config['observation_wavelength_end']))
 
     @prompt_command
     def observation_normalize_wavelength(self):
-        self.config['observation_normalize_wavelength'] = safe_default_input(
-            'Wavelength (Angstroms)',
-            self.config['observation_normalize_wavelength'])
-        self.observation.do_normalize(
-            self.config['observation_normalize_wavelength'])
+        self.config['observation_normalize_wavelength'] = self.config['model_normalize_wavelength']
+        self.observation.do_normalize(self.config['observation_normalize_wavelength'])
 
     @prompt_command
     def observation_output(self):
@@ -852,20 +840,18 @@ class Run_Shell(Object_Shell):
             self.model_output()
 
         self.observation_read()
-        if parse_input_yn('Set starting wavelength', default=True):
-            self.observation_interpolation_wavelength_start()
-        if parse_input_yn('Smooth the observation', default=True):
-            self.observation_smoothen()
-        if parse_input_yn('Observation set wavelength range (Angstroms)', default=True):
-            self.observation_wavelength_range_2()
+        self.observation_interpolation_wavelength_start()
+        self.observation_smoothen()
+        self.observation_wavelength_range_2()
+        
         if parse_input_yn('Output smoothed observations'):
             self.observation_smoothen_output()
         if parse_input_yn('Observation reddening correction', default=True):
             self.observation_reddening()
-        if parse_input_yn('Observation set wavelength range (Angstroms)', default=True):
-            self.observation_wavelength_range_2()
-        if parse_input_yn('Observation normalize', default=True):
-            self.observation_normalize_wavelength()
+
+        self.observation_wavelength_range_2()
+        self.observation_normalize_wavelength()
+        
         if parse_input_yn('Output observations'):
             self.observation_output()
         self.object_generate()
