@@ -126,7 +126,7 @@ class Shell(cmd.Cmd, object):
     def __init__(self, *args, **kwargs):
         self._values = list()
         cmd.Cmd.__init__(self, *args, **kwargs)
-        
+
     def default(self, line):
         print("Unknown command " + line)
 
@@ -139,7 +139,7 @@ class Shell(cmd.Cmd, object):
             self.values = list(self.values[index[0]:index[1]])
 
         yield
-        
+
         if len(index) == 1:
             temp[index[0]] = self.values[0]
         elif len(index) == 2:
@@ -181,13 +181,13 @@ class Base_Shell(Shell):
         if not self.values:
             print('Empty')
             return
-            
+
         len_cols = (10, 20, 10, 10)
         ncols = len(len_cols)
         (col_str, sep_str) = ("{:^%d}|", "{:-^%d}+")
         fmt_col = '|' + (col_str * ncols) % len_cols
         sep = '+' + ((sep_str * ncols) % len_cols).format(*['']*ncols)
-        
+
         print (sep)
         print(fmt_col.format('Index', 'Name', 'Num', 'Num_WL'))
         print(sep)
@@ -206,7 +206,7 @@ class Base_Shell(Shell):
             error_print("Failed to read file")
             error_print(unicode(err))
             raise err
-            
+
     def do_directory(self, arg):
         "Read all the files in a directory"
         try:
@@ -242,7 +242,7 @@ class Base_Shell(Shell):
             error_print('File or Directory Read Error')
             error_print(unicode(err))
             raise err
-                        
+
     def do_write(self, arg, prefix=''):
         "Write current bases to a directory"
         path = parse_args(arg, expected=1)[0]
@@ -265,7 +265,7 @@ class Base_Shell(Shell):
         for (i, base) in enumerate(self.values):
             self.values[i] = base.normalize(wavelength)
             ok_print('Normalized: {}'.format(base.name))
-            
+
     def do_name(self, arg):
         for base in self.values:
             pprint(base.name)
@@ -275,7 +275,7 @@ class Base_Shell(Shell):
         for base in self.values:
             base.name = name
         ok_print('Name set to: {}'.format(name))
-            
+
     def do_wavelength_index(self, arg):
         try:
             (start, end) = parse_tuple_int(arg, expected=2)
@@ -319,7 +319,7 @@ class Base_Shell(Shell):
         except ValueError as value_error:
             error_print('set_wavelength_index (start, end)')
             raise value_error
-                
+
     def do_set_wavelength_range(self, arg):
         try:
             (start, end) = parse_tuple(arg, expected=2, type=float)
@@ -336,7 +336,7 @@ class Base_Shell(Shell):
         except TypeError as type_error:
             error_print('wavelength range must be floats')
             raise type_error
-                
+
     def do_flux(self, arg):
         try:
             args = parse_args(arg, expected=2)
@@ -385,7 +385,7 @@ class Model_Shell(Base_Shell):
         age_factor = parse_args(arg, expected=1, type=float)[0]
         for model in self.values:
             model.age_factor = age_factor
-            
+
     def do_set_age_start(self, arg):
         age_start = parse_args(arg, expected=1, type=float)[0]
         for model in self.values:
@@ -400,12 +400,12 @@ class Observation_Shell(Base_Shell):
         reddening_step = parse_args(arg, expected=1, type=float)[0]
         for obsv in self.values:
             obsv.reddening_step = reddening_step
-            
+
     def do_set_reddening_start(self, arg):
         reddening_start = parse_args(arg, expected=1, type=float)[0]
         for obsv in self.values:
             obsv.reddening_start = reddening_start
-            
+
     def do_redshift(self, arg):
         try:
             [start, end, step] = parse_args(arg, expected=3, type=float)
@@ -472,13 +472,13 @@ class Object_Shell(Base_Shell):
         if not self.values:
             print('Empty')
             return
-            
+
         len_cols = (5, 15, 10, 10)
         ncols = len(len_cols)
         (col_str, sep_str) = ("{:^%d}|", "{:-^%d}+")
         fmt_col = '|' + (col_str * ncols) % len_cols
         sep = '+' + ((sep_str * ncols) % len_cols).format(*['']*ncols)
-        
+
         print (sep)
         print(fmt_col.format('Index', 'Name', 'Min_Age', 'Min_Reddening'))
         print(sep)
@@ -514,7 +514,7 @@ class Object_Shell(Base_Shell):
     @base_command
     def do_plot(self, arg):
         pass
-        
+
     def do_plot_surface(self, arg, format=''):
         try:
             path = os.path.abspath(parse_args(arg, expected=1)[0])
@@ -526,7 +526,7 @@ class Object_Shell(Base_Shell):
         except Exception as err:
             error_print(unicode(err))
             raise err
-                    
+
     def do_plot_scatter(self, arg, ages=[], reddenings=[], format=''):
         try:
             path = os.path.abspath(parse_args(arg, expected=1)[0])
@@ -564,7 +564,7 @@ class Object_Shell(Base_Shell):
         except Exception as err:
             error_print(unicode(err))
             raise err
-                    
+
     @property
     def base(self):
         return self._base
@@ -808,7 +808,7 @@ class Run_Shell(Object_Shell):
         self.object.do_plot_scatter(self.config['plot_scatter_directory'],
                                     ages=ages, reddenings=reddenings,
                                     format=self.config['plot_output_format'])
-    
+
     @prompt_command
     def plot_residual_output(self):
         self.config['plot_residual_directory'] = safe_default_input(
@@ -824,7 +824,7 @@ class Run_Shell(Object_Shell):
             self.config['plot_surface_error_directory'])
         self.object.do_plot_surface_error(self.config['plot_surface_error_directory'],
                                           format=self.config['plot_output_format'])
-        
+
     def cmdloop(self):
         info_print("Assistant mode.")
         self.model_read()
@@ -843,7 +843,7 @@ class Run_Shell(Object_Shell):
         self.observation_interpolation_wavelength_start()
         self.observation_smoothen()
         self.observation_wavelength_range_2()
-        
+
         if parse_input_yn('Output smoothed observations'):
             self.observation_smoothen_output()
         if parse_input_yn('Observation reddening correction', default=True):
@@ -851,7 +851,7 @@ class Run_Shell(Object_Shell):
 
         self.observation_wavelength_range_2()
         self.observation_normalize_wavelength()
-        
+
         if parse_input_yn('Output observations'):
             self.observation_output()
         self.object_generate()
@@ -899,7 +899,7 @@ class Main_Shell(cmd.Cmd):
     @property
     def observation(self):
         return self.object._observation
-                
+
     @property
     def object(self):
         return self._object
@@ -908,7 +908,7 @@ class Main_Shell(cmd.Cmd):
         self._object = obj
 
     def do_base(self, arg):
-        return self.base.onecmd(arg)    
+        return self.base.onecmd(arg)
     def do_model(self, arg):
         return self.model.onecmd(arg)
     def do_observation(self, arg):
@@ -932,5 +932,5 @@ def override_prompt_command(func):
 def set_not_interactive():
     global safe_default_input
     safe_default_input = override_safe_default_input
-    
+
 #===============================================================================

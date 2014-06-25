@@ -35,7 +35,7 @@ def model_name_format(model_name):
 def title_format(obj):
     model_name = obj.model.name
     observation_name = obj.observation.name
-    return '[ {} with {} ]',format(observation_name, model_name)
+    return '[ {} with {} ]'.format(observation_name, model_name)
 
 def surface(obj, levels=15, outdir="",
             fname='',
@@ -53,10 +53,10 @@ def surface(obj, levels=15, outdir="",
     fig = plt.figure(figsize=(16,10))
     border_width = 0.10
     border_height = 0.07
-    ax_size = [0+border_width, 0+border_height, 
+    ax_size = [0+border_width, 0+border_height,
                1-0.5*border_width, 1-2*border_height]
     ax = fig.add_axes(ax_size)
-    
+
     C  = plt.contour(x, y, z, NL, colors=['k'], linewidths=0.10)
     if labels: plt.clabel(C, inline=1, fontsize=10, linewidths=0.10)
     CF = plt.contourf(x, y, z, NL, alpha=0.85, cmap=cm.jet)
@@ -68,11 +68,11 @@ def surface(obj, levels=15, outdir="",
 
     plt.xlim([obj.model.age[0], obj.model.age[-1]])
     plt.ylim([obj.observation.reddening[0], obj.observation.reddening[-1]])
-    
+
     plt.title(title_format(obj), **font)
     plt.xlabel("log(Age/Year)", **font)
     plt.ylabel("Reddening", **font)
-    
+
     plt.minorticks_on()
     plt.grid(which='both')
 
@@ -103,7 +103,7 @@ def scatter(obj, ages=[], reddenings=[], outdir='',
 
     def find_indices(values, target):
         return np.searchsorted(values, target)
-    
+
     model_index = find_indices(model.age, ages)-1
     if len(model_index) == 0: model_index = [obj.min_model]
     obsv_index = find_indices(obsv.reddening, reddenings)
@@ -172,7 +172,7 @@ def residual(obj, outdir='',
 
     ax4.legend(loc='upper right', shadow=False, prop={'size':7})
     ax4.tick_params(axis='y', which='major', labelsize=8)
-    
+
     file_name = fname or ("residual_" + obj.name)
     if save:
         plt.savefig(
@@ -203,10 +203,10 @@ def surface_error(obj, levels=15, outdir='',
     fig = plt.figure(figsize=(16,10))
     border_width = 0.10
     border_height = 0.07
-    ax_size = [0+border_width, 0+border_height, 
+    ax_size = [0+border_width, 0+border_height,
                1-0.5*border_width, 1-2*border_height]
     ax = fig.add_axes(ax_size)
-    
+
     C  = plt.contour(x, y, z, NL, colors=['k'], linewidths=0.10)
     if labels: plt.clabel(C, inline=1, fontsize=10, linewidths=0.10)
     CF = plt.contourf(x, y, z, NL, alpha=0.85, cmap=cm.jet)
@@ -220,11 +220,11 @@ def surface_error(obj, levels=15, outdir='',
 
     plt.xlim([obj.model.age[0], obj.model.age[-1]])
     plt.ylim([obj.observation.reddening[0], obj.observation.reddening[-1]])
-    
+
     plt.title(title_format(obj), **font)
     plt.xlabel("log(Age/Year)", **font)
     plt.ylabel("Reddening", **font)
-    
+
     plt.minorticks_on()
     plt.grid(which='both')
 
