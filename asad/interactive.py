@@ -282,7 +282,8 @@ class Base_Shell(Shell):
             if end == -1:
                 end = None
             for base in self.values:
-                print(base.wavelength_str(start, end))
+                print('{}: {}'.format(base.name, base.wavelength_str(start, end)))
+            print('\n')
         except ValueError as value_error:
             error_print('wavelength index needs 2 args: (start, end)')
             raise value_error
@@ -303,7 +304,7 @@ class Base_Shell(Shell):
             error_print('wavelength range (wl_start, wl_end)')
             raise value_error
         except IndexError as index_error:
-            error_print('invalid wavelength range')
+            error_print('invalid wavelength range, choosing entire range')
             error_print(str(index_error))
             raise index_error
         except TypeError as type_error:
@@ -320,6 +321,40 @@ class Base_Shell(Shell):
             error_print('set_wavelength_index (start, end)')
             raise value_error
 
+    def do_set_wavelength_start(self, arg):
+        try:
+            start = parse_tuple(arg, expected=1, type=float)[0]
+            for (i, base) in enumerate(self.values):
+                self.values[i] = base.wavelength_set_start(start)
+                ok_print('Wavelength start set to: {}'.format(start))
+        except ValueError as value_error:
+            error_print('set_wavelength_start wl_start')
+            raise value_error
+        except IndexError as index_error:
+            error_print('invalid wavelength start, wavelength start not set')
+            error_print(str(index_error))
+            pass
+        except TypeError as type_error:
+            error_print('wavelength start must be a float')
+            raise type_error
+
+    def do_set_wavelength_end(self, arg):
+        try:
+            end = parse_tuple(arg, expected=1, type=float)[0]
+            for (i, base) in enumerate(self.values):
+                self.values[i] = base.wavelength_set_end(end)
+                ok_print('Wavelength end set to: {}'.format(end))
+        except ValueError as value_error:
+            error_print('set_wavelength_end wl_end')
+            raise value_error
+        except IndexError as index_error:
+            error_print('invalid wavelength end, wavelength end not set')
+            error_print(str(index_error))
+            pass
+        except TypeError as type_error:
+            error_print('wavelength end must be a float')
+            raise type_error
+    
     def do_set_wavelength_range(self, arg):
         try:
             (start, end) = parse_tuple(arg, expected=2, type=float)
@@ -330,9 +365,9 @@ class Base_Shell(Shell):
             error_print('set_wavelength_range (wl_start, wl_end)')
             raise value_error
         except IndexError as index_error:
-            error_print('invalid wavelength range')
+            error_print('invalid wavelength range, choosing entire range')
             error_print(str(index_error))
-            raise index_error
+            pass
         except TypeError as type_error:
             error_print('wavelength range must be floats')
             raise type_error
@@ -355,10 +390,14 @@ class Base_Shell(Shell):
             raise type_error
 
     def do_interpolation_wavelength_start(self, arg):
+        args = parse_args(arg, expected=2, type=float)
+        interp = args[0]
+        wavelength = args[1]
         for base in self.values:
-            wavelength = parse_args(arg, expected=1, type=float)[0]
-            base.restrict_wavelength(wavelength)
-
+            wl_start = base.restrict_wavelength_start_by_interpolation_step(interp, wavelength)
+            ok_print('{}: set starting wavelength to: {} using interpolation step: {}'.format(
+                 base.name, wl_start, interp))
+            
     def do_smoothen(self, arg):
         try:
             args = parse_args(arg, expected=1)
@@ -565,6 +604,20 @@ class Object_Shell(Base_Shell):
             error_print(unicode(err))
             raise err
 
+    def do_plot_scatter_tile(self, arg, format=''):
+        try:
+            path = os.path.abspath(parse_args(arg, expected=1)[0])
+            if not os.path.isdir(path):
+                raise RuntimeError('Must be a directory')
+            obj_len = len(self.values)
+            ncols = 3
+            nrows = obj_len / ncols
+            plot.scatter_tile(self.values, nrows, ncols, outdir=path, save=True, format=format)
+            ok_print('Plotted scatter tile %s' % path)
+        except Exception as err:
+            error_print(unicode(err))
+            raise err        
+
     @property
     def base(self):
         return self._base
@@ -621,39 +674,35 @@ class Run_Shell(Object_Shell):
 
     @prompt_command
     def model_interpolation_wavelength_start(self):
-        self.config['model_interpolation_wavelength_start'] = safe_default_input(
-            'Interpolation Wavelength Start',
-            self.config['model_interpolation_wavelength_start'])
+        self.config['model_interpolation_wavelength_start'] = self.config['observation_interpolation_wavelength_start']
         self.model.do_interpolation_wavelength_start(
             self.config['model_interpolation_wavelength_start'])
 
     @prompt_command
+    def model_interpolation_wavelength_start_2(self):
+        self.model.do_interpolation_wavelength_start('{} {}'.format(
+            self.config['observation_interpolation_step'],
+            self.config['observation_wavelength_start']))
+
+    @prompt_command
     def model_smoothen(self):
-        self.config['model_interpolation_step'] = safe_default_input(
-            'Interpolation Step',
-            self.config['model_interpolation_step'])
-        self.model.do_smoothen(self.config['model_interpolation_step'])
+        self.config['model_interpolation_step'] = self.config['observation_interpolation_step']
+        self.model.do_smoothen(self.config['observation_interpolation_step'])
 
     @prompt_command
     def model_wavelength_range(self):
         print('Current Wavelength Range: ')
         self.model.do_wavelength_index('(0, -1)')
-        self.config['model_wavelength_start'] = safe_default_input(
-            'Wavelength Start (Angstroms)',
-            self.config['model_wavelength_start'])
-        self.config['model_wavelength_end'] = safe_default_input(
-            'Wavelength End (Angstroms)',
-            self.config['model_wavelength_end'])
+        self.config['model_wavelength_start'] = self.config['observation_wavelength_start']
+        self.config['model_wavelength_end'] = self.config['observation_wavelength_end']
         self.model.do_set_wavelength_range('(%s, %s)' % (
-            self.config['model_wavelength_start'],
-            self.config['model_wavelength_end']))
+            self.config['observation_wavelength_start'],
+            self.config['observation_wavelength_end']))
 
     @prompt_command
     def model_normalize_wavelength(self):
-        self.config['model_normalize_wavelength'] = safe_default_input(
-            'Wavelength (Angstroms)',
-            self.config['model_normalize_wavelength'])
-        self.model.do_normalize(self.config['model_normalize_wavelength'])
+        self.config['model_normalize_wavelength'] = self.config['observation_normalize_wavelength']
+        self.model.do_normalize(self.config['observation_normalize_wavelength'])
 
     @prompt_command
     def model_output(self):
@@ -671,13 +720,10 @@ class Run_Shell(Object_Shell):
             self.config['observation_input_directory'])
 
     @prompt_command
-    def observation_interpolation_wavelength_start(self):
-        self.config['observation_interpolation_wavelength_start'] = self.config['model_interpolation_wavelength_start']
-        self.observation.do_interpolation_wavelength_start(self.config['observation_interpolation_wavelength_start'])
-
-    @prompt_command
     def observation_smoothen(self):
-        self.config['observation_interpolation_step'] = self.config['model_interpolation_step']
+        self.config['observation_interpolation_step'] = safe_default_input(
+            'Interpolation Step',
+            self.config['observation_interpolation_step'])
         self.observation.do_smoothen(self.config['observation_interpolation_step'])
 
     @prompt_command
@@ -706,30 +752,44 @@ class Run_Shell(Object_Shell):
             self.config['observation_reddening_step']]))
 
     @prompt_command
-    def observation_wavelength_range(self):
-        try:
-            wl_range = '(%s, %s)' %  (self.config['observation_wavelength_start'],
-                                      self.config['observation_wavelength_end'])
-            print('Setting observation wavelength range to %s' % wl_range)
-            self.observation.do_set_wavelength_range(wl_range)
-        except Exception as err:
-            print('Enter a new wavelength range!')
-            self.observation_wavelength_range()
-            raise err
-
-    @prompt_command
-    def observation_wavelength_range_2(self):
+    def observation_wavelength_start(self):
         print('Current Wavelength Range: ')
         self.observation.do_wavelength_index('(0, -1)')
-        self.config['observation_wavelength_start'] = self.config['model_wavelength_start']
-        self.config['observation_wavelength_end'] = self.config['model_wavelength_end']
+        self.config['observation_wavelength_start'] = safe_default_input(
+            'Wavelength Start (Angstroms)',
+            self.config['observation_wavelength_start'])
+        self.observation.do_set_wavelength_start(
+            self.config['observation_wavelength_start'])
+
+    @prompt_command
+    def observation_wavelength_end(self):
+        print('Current Wavelength Range: ')
+        self.observation.do_wavelength_index('(0, -1)')
+        self.config['observation_wavelength_end'] = safe_default_input(
+            'Wavelength End (Angstroms)',
+            self.config['observation_wavelength_end'])
+        self.observation.do_set_wavelength_end(
+            self.config['observation_wavelength_end'])
+    
+    @prompt_command
+    def observation_wavelength_range(self):
+        print('Current Wavelength Range: ')
+        self.observation.do_wavelength_index('(0, -1)')
+        self.config['observation_wavelength_start'] = safe_default_input(
+            'Wavelength Start (Angstroms)',
+            self.config['observation_wavelength_start'])
+        self.config['observation_wavelength_end'] = safe_default_input(
+            'Wavelength End (Angstroms)',
+            self.config['observation_wavelength_end'])
         self.observation.do_set_wavelength_range('(%s, %s)' % (
             self.config['observation_wavelength_start'],
             self.config['observation_wavelength_end']))
 
     @prompt_command
     def observation_normalize_wavelength(self):
-        self.config['observation_normalize_wavelength'] = self.config['model_normalize_wavelength']
+        self.config['observation_normalize_wavelength'] = safe_default_input(
+            'Wavelength (Angstroms)',
+            self.config['observation_normalize_wavelength'])
         self.observation.do_normalize(self.config['observation_normalize_wavelength'])
 
     @prompt_command
@@ -825,35 +885,43 @@ class Run_Shell(Object_Shell):
         self.object.do_plot_surface_error(self.config['plot_surface_error_directory'],
                                           format=self.config['plot_output_format'])
 
+    @prompt_command
+    def plot_scatter_tile_output(self):
+        self.object.do_plot_scatter_tile(self.config['plot_surface_error_directory'],
+                                         format=self.config['plot_output_format'])
+    
     def cmdloop(self):
         info_print("Assistant mode.")
-        self.model_read()
-        if parse_input_yn('Set starting wavelength', default=True):
-            self.model_interpolation_wavelength_start()
-        if parse_input_yn('Smooth the model', default=True):
-            self.model_smoothen()
-        if parse_input_yn('Model set wavelength range (Angstroms)', default=True):
-            self.model_wavelength_range()
-        if parse_input_yn('Model normalize wavelength', default=True):
-             self.model_normalize_wavelength()
-        if parse_input_yn('Output models'):
-            self.model_output()
 
         self.observation_read()
-        self.observation_interpolation_wavelength_start()
-        self.observation_smoothen()
-        self.observation_wavelength_range_2()
-
+        if parse_input_yn('Observation set wavelength start (Angstroms)', default=True):
+            self.observation_wavelength_start()
+        if parse_input_yn('Smooth the observation', default=True):
+            self.observation_smoothen()
+        if parse_input_yn('Observation set wavelength end (Angstroms)', default=True):
+            self.observation_wavelength_end()
         if parse_input_yn('Output smoothed observations'):
             self.observation_smoothen_output()
         if parse_input_yn('Observation reddening correction', default=True):
             self.observation_reddening()
 
-        self.observation_wavelength_range_2()
-        self.observation_normalize_wavelength()
-
+        if parse_input_yn('Observation normalize wavelength', default=True):
+            self.observation_normalize_wavelength()
         if parse_input_yn('Output observations'):
             self.observation_output()
+
+        self.update_config()
+        
+        self.model_read()
+        self.model_interpolation_wavelength_start_2()
+        self.model_smoothen()
+        self.model_wavelength_range()
+        self.model_normalize_wavelength()
+        if parse_input_yn('Output models'):
+            self.model_output()
+
+        self.update_config()
+        
         self.object_generate()
         if parse_input_yn('Output object files'):
             self.object_output()
@@ -869,6 +937,8 @@ class Run_Shell(Object_Shell):
             self.plot_residual_output()
         if parse_input_yn('Output surface error plots'):
             self.plot_surface_error_output()
+        if parse_input_yn('Output scatter tile plot'):
+            self.plot_scatter_tile_output()
         self.update_config()
 
 #==============================================================================

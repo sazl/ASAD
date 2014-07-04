@@ -110,6 +110,7 @@ class Base(object):
 
     def __init__(self, path=None, name=None):
         self._name            = name
+        self._original_name   = name
         self._wavelength_step = 0
         self._wavelength      = np.array([])
         self._flux            = np.array([])
@@ -133,6 +134,7 @@ class Base(object):
         basename = os.path.basename(path)
         (name, ext) = os.path.splitext(basename)
         self.name = basename
+        self.original_name = basename
         self.wavelength = mat[0]
         self.wavelength_step = self.wavelength[1] - self.wavelength[0]
         self.flux = mat[1:]
@@ -185,31 +187,40 @@ class Base(object):
     def wavelength_set_index(self, start, end):
         result = copy.deepcopy(self)
         result.wavelength = self.wavelength[start:end]
-        result.flux = self.flux[:, start:end]        
+        result.flux = self.flux[:, start:end]
         return result
 
     def wavelength_set_start(self, start):
         index_start = np.searchsorted(self.wavelength, start)
         return self.wavelength_set_index(index_start, None)
 
-    def wavelength_set_end(self, start):
+    def wavelength_set_end(self, end):
         index_end = np.searchsorted(self.wavelength, end)
         return self.wavelength_set_index(0, index_end+1)
 
-    def restrict_wavelength(self, wavelength):
+    def restrict_wavelength_start(self, wavelength):
         index = np.searchsorted(self.wavelength, wavelength)
         self.wavelength = self.wavelength[index:]
         self.flux = self.flux[:, index:]
     
+    def restrict_wavelength_start_by_interpolation_step(self, interp, wavelength):
+        step = interp / self.wavelength_step
+        wl = self.wavelength[step:]
+        wl_indices = np.where(np.isclose((wavelength - wl) % interp, 0.0))[0]
+        wl_start_index = wl_indices[0]
+        wl_start = self.wavelength[wl_start_index + 1]
+        self.restrict_wavelength_start(wl_start)
+        return wl_start
+    
     def wavelength_set_range(self, start, end):
         (index_start, index_end) = self.wavelength_index(start, end)
-        x = self.wavelength_set_index(index_start, index_end+1)
-        return x
+        return self.wavelength_set_index(index_start, index_end+1)
 
     def smoothen(self, interp, name='', step=0):
         if step <= 0:
             step = self.wavelength_step
-        result = self.__class__(name=name)
+        result = copy.deepcopy(self)
+        result.name = name
         result.wavelength = Math.wavelength_interpolate_step(
             self.wavelength, interp, step)
         result.flux = Math.flux_interpolate_step(self.flux, interp, step)
@@ -221,6 +232,13 @@ class Base(object):
     @name.setter
     def name(self, name):
         self._name = name
+
+    @property
+    def original_name(self):
+        return self._original_name
+    @original_name.setter
+    def original_name(self, original_name):
+        self._original_name = original_name
 
     @property
     def wavelength_step(self):
@@ -287,7 +305,7 @@ class Model(Base):
         super(Model, self).read_from_path(path)
         model_indices = np.arange(0, 220, 3)
         self.flux = self.flux[model_indices]
-
+    
     @property
     def age_start(self):
         return self.var_start
@@ -359,7 +377,8 @@ class Observation(Base):
     def smoothen(self, interp, name='', step=0):
         if step <= 0:
             step = self.wavelength_step
-        result = Observation(name=name)
+        result = copy.deepcopy(self)
+        result.name = name
         result.wavelength = Math.wavelength_interpolate_step_obsv(
             self.wavelength, interp, step)
         result.flux = Math.flux_interpolate_step_obsv(self.flux, interp, step)

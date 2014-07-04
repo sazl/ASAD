@@ -1,4 +1,5 @@
 import os.path, re, sys
+from itertools import cycle
 
 import numpy              as np
 import matplotlib         as mpl
@@ -96,8 +97,8 @@ def scatter(obj, ages=[], reddenings=[], outdir='',
             ylabel='',
             save=False,
             show=False,
+            close=True,
             *args, **kwargs):
-    fig, ax = plt.subplots()
     model = obj.model
     obsv = obj.observation
 
@@ -112,12 +113,12 @@ def scatter(obj, ages=[], reddenings=[], outdir='',
     for mi in model_index:
         model_label = 'Model: age=%s' % (model.age[mi])
         plt.plot(model.wavelength, model.flux[mi],
-                label=model_label, linewidth=0.5)
+                 label=model_label, linewidth=0.5, marker='+')
 
     for oi in obsv_index:
         obsv_label = 'Observation: reddening=%s' % (obsv.reddening[oi])
         plt.plot(obsv.wavelength, obsv.flux[oi],
-                 label=obsv_label, linewidth=0.5)
+                 label=obsv_label, linewidth=0.5, marker='.')
 
     plt.title('Flux vs Wavelength\n' + title_format(obj))
     plt.xlabel("Wavelength (Angstroms)")
@@ -133,7 +134,45 @@ def scatter(obj, ages=[], reddenings=[], outdir='',
 
     if show:
         plt.show()
-    plt.close()
+    if close:
+        plt.close()
+
+def scatter_subplot(obj, ages=[], reddenings=[], outdir='',
+            fname='',
+            format='eps',
+            title='',
+            xlabel='',
+            ylabel='',
+            *args, **kwargs):
+    model = obj.model
+    obsv = obj.observation
+
+    def find_indices(values, target):
+        return np.searchsorted(values, target)
+
+    model_index = find_indices(model.age, ages)-1
+    if len(model_index) == 0: model_index = [obj.min_model]
+    obsv_index = find_indices(obsv.reddening, reddenings)
+    if len(obsv_index) == 0: obsv_index = [obj.min_observation]
+
+    for mi in model_index:
+        model_label = 'Model: age=%s' % (model.age[mi])
+        plt.plot(model.wavelength, model.flux[mi],
+                 label=model_label, linewidth=0.5,
+                 linestyle='dotted')
+                 #marker='+', markersize=1.15)
+
+    for oi in obsv_index:
+        obsv_label = 'Observation'
+        plt.plot(obsv.wavelength, obsv.flux[oi],
+                 label=obsv_label, linewidth=0.8)
+                 #marker='.', markersize=4)
+
+    title = os.path.splitext(obj.observation.original_name)[0]
+    plt.title('[{}]'.format(title))
+    plt.xlabel(u"Wavelength (Angstroms)")
+    plt.ylabel("Normalized Flux")
+    plt.legend(loc='upper right', shadow=False, prop={'size':8})
 
 def residual(obj, outdir='',
             fname='',
@@ -238,3 +277,33 @@ def surface_error(obj, levels=15, outdir='',
     if show:
         plt.show()
     plt.close()
+
+def scatter_tile(objs, nrows, ncols, actual_ages=[], outdir='',
+            fname='',
+            format='eps',
+            title='',
+            xlabel='',
+            ylabel='',
+            save=False,
+            show=False,
+            *args, **kwargs):
+    fig, axes = plt.subplots(nrows, ncols, figsize=(16,10))
+    fig.tight_layout()
+    obj_index = 1
+    for i in range(1, nrows+1):        
+        for j in range(1, ncols+1):
+            if obj_index > len(objs):
+                return
+            plt.subplot(nrows, ncols, obj_index)
+            scatter_subplot(objs[obj_index-1], close=False)
+            obj_index += 1
+
+    plt.subplots_adjust(hspace = 1.0, wspace=0.3)
+    file_name = fname or 'scatter_tile'
+    if save:
+        plt.savefig(
+            os.path.abspath(os.path.join(outdir, file_name)) + "." + format,
+            format=format,
+            bbox_inches='tight',
+            dpi=500
+        )

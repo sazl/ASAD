@@ -5,8 +5,8 @@
 
 namespace asad {
 
-typedef vec std::vector<double>;
-typedef mat std::vector<std::vector<double>>;
+typedef std::vector<double> vec;
+typedef std::vector<std::vector<double> > mat;
 
 namespace math {
 
