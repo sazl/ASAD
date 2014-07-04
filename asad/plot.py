@@ -34,8 +34,8 @@ def model_name_format(model_name):
         return 'z=%s' % m.group(1)
 
 def title_format(obj):
-    model_name = obj.model.name
-    observation_name = obj.observation.name
+    model_name = obj.model.original_name
+    observation_name = obj.observation.original_name
     return '[ {} with {} ]'.format(observation_name, model_name)
 
 def surface(obj, levels=15, outdir="",
