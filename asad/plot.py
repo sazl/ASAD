@@ -113,12 +113,13 @@ def scatter(obj, ages=[], reddenings=[], outdir='',
     for mi in model_index:
         model_label = 'Model: age=%s' % (model.age[mi])
         plt.plot(model.wavelength, model.flux[mi],
-                 label=model_label, linewidth=0.5, marker='+')
+                 label=model_label, linewidth=0.5,
+                 linestyle='dashed')
 
     for oi in obsv_index:
         obsv_label = 'Observation: reddening=%s' % (obsv.reddening[oi])
         plt.plot(obsv.wavelength, obsv.flux[oi],
-                 label=obsv_label, linewidth=0.5, marker='.')
+                 label=obsv_label, linewidth=0.5)
 
     plt.title('Flux vs Wavelength\n' + title_format(obj))
     plt.xlabel("Wavelength (Angstroms)")
@@ -137,7 +138,9 @@ def scatter(obj, ages=[], reddenings=[], outdir='',
     if close:
         plt.close()
 
-def scatter_subplot(obj, ages=[], reddenings=[], outdir='',
+def scatter_subplot(obj, ages=[], reddenings=[],
+            original_ages={},
+            outdir='',
             fname='',
             format='eps',
             title='',
@@ -146,11 +149,12 @@ def scatter_subplot(obj, ages=[], reddenings=[], outdir='',
             *args, **kwargs):
     model = obj.model
     obsv = obj.observation
-
+    obsv_name = obj.observation.original_name
+    
     def find_indices(values, target):
         return np.searchsorted(values, target)
 
-    model_index = find_indices(model.age, ages)-1
+    model_index = find_indices(model.age, ages) - 1
     if len(model_index) == 0: model_index = [obj.min_model]
     obsv_index = find_indices(obsv.reddening, reddenings)
     if len(obsv_index) == 0: obsv_index = [obj.min_observation]
@@ -160,19 +164,19 @@ def scatter_subplot(obj, ages=[], reddenings=[], outdir='',
         plt.plot(model.wavelength, model.flux[mi],
                  label=model_label, linewidth=0.5,
                  linestyle='dotted')
-                 #marker='+', markersize=1.15)
-
+    
     for oi in obsv_index:
-        obsv_label = 'Observation'
+        if obsv_name in original_ages:
+            obsv_label = 'Observation: age=%s' % original_ages[obsv_name]
+        else:
+            obsv_label = 'Observation'
         plt.plot(obsv.wavelength, obsv.flux[oi],
                  label=obsv_label, linewidth=0.8)
-                 #marker='.', markersize=4)
 
-    title = os.path.splitext(obj.observation.original_name)[0]
-    plt.title('[{}]'.format(title))
+    plt.title('[{}]'.format(obsv_name))
     plt.xlabel(u"Wavelength (Angstroms)")
     plt.ylabel("Normalized Flux")
-    plt.legend(loc='upper right', shadow=False, prop={'size':8})
+    plt.legend(loc='upper right', shadow=False, prop={'size':7})
 
 def residual(obj, outdir='',
             fname='',
@@ -278,7 +282,7 @@ def surface_error(obj, levels=15, outdir='',
         plt.show()
     plt.close()
 
-def scatter_tile(objs, nrows, ncols, actual_ages=[], outdir='',
+def scatter_tile(objs, nrows, ncols, original_ages=None, outdir='',
             fname='',
             format='eps',
             title='',
@@ -295,7 +299,8 @@ def scatter_tile(objs, nrows, ncols, actual_ages=[], outdir='',
             if obj_index > len(objs):
                 return
             plt.subplot(nrows, ncols, obj_index)
-            scatter_subplot(objs[obj_index-1], close=False)
+            scatter_subplot(objs[obj_index-1], original_ages=original_ages,
+                            close=False)
             obj_index += 1
 
     plt.subplots_adjust(hspace = 1.0, wspace=0.3)
@@ -305,5 +310,5 @@ def scatter_tile(objs, nrows, ncols, actual_ages=[], outdir='',
             os.path.abspath(os.path.join(outdir, file_name)) + "." + format,
             format=format,
             bbox_inches='tight',
-            dpi=500
+            dpi=800
         )

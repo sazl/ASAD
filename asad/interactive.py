@@ -4,7 +4,7 @@ import cmd
 import contextlib
 import io
 import glob
-import os
+import os, os.path
 import re
 import shlex
 import sys
@@ -612,7 +612,30 @@ class Object_Shell(Base_Shell):
             obj_len = len(self.values)
             ncols = 3
             nrows = obj_len / ncols
-            plot.scatter_tile(self.values, nrows, ncols, outdir=path, save=True, format=format)
+            original_ages = {
+                'Ya'  : 6.48,
+                'Yb1' : 6.88,
+                'Yb2' : 6.88,
+                'Yb3' : 6.88,
+                'Yc'  : 7.30,
+                'Yd'  : 7.60,
+                'Ye'  : 7.78,
+                'Yf'  : 8.10,
+                'Yg'  : 8.44,
+                'Yh'  : 8.70,
+                'Ia'  : 9.00,
+                'Ib'  : 9.54,
+            }
+            for x in self.values:
+                title = os.path.splitext(x.observation.original_name)[0]
+                x.observation.original_name = title
+
+            observations = ['Ya', 'Yb1', 'Yb2', 'Yb3', 'Yc', 'Yd', 'Ye', 'Yf', 'Yg', 'Yh', 'Ia', 'Ib']
+            self.values.sort(key=lambda x: observations.index(x.observation.original_name))
+
+            plot.scatter_tile(self.values, nrows, ncols, outdir=path,
+                              original_ages=original_ages,
+                              save=True, format=format)
             ok_print('Plotted scatter tile %s' % path)
         except Exception as err:
             error_print(unicode(err))
