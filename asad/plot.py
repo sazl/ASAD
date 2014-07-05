@@ -27,15 +27,18 @@ font = {
 }
 
 def model_name_format(model_name):
-    m = re.match('\.z(\d{3})', model_name)
+    m = re.search('\.z(\d{3})', model_name)
     if not m:
         return model_name
     else:
-        return 'z=%s' % m.group(1)
+        return 'z=0.%s' % m.group(1)
+
+def observation_name_format(observation_name):
+    return os.path.splitext(observation_name)[0]
 
 def title_format(obj):
-    model_name = obj.model.original_name
-    observation_name = obj.observation.original_name
+    model_name = model_name_format(obj.model.original_name)
+    observation_name = observation_name_format(obj.observation.original_name)
     return '[ {} with {} ]'.format(observation_name, model_name)
 
 def surface(obj, levels=15, outdir="",
@@ -99,13 +102,15 @@ def scatter(obj, ages=[], reddenings=[], outdir='',
             show=False,
             close=True,
             *args, **kwargs):
+    model_linestyles = cycle(['--', ':', '-.', '-'])
+    obsv_linestyles = cycle(['-',':','-.',':'])
     model = obj.model
     obsv = obj.observation
 
     def find_indices(values, target):
         return np.searchsorted(values, target)
 
-    model_index = find_indices(model.age, ages)-1
+    model_index = find_indices(model.age, ages)
     if len(model_index) == 0: model_index = [obj.min_model]
     obsv_index = find_indices(obsv.reddening, reddenings)
     if len(obsv_index) == 0: obsv_index = [obj.min_observation]
@@ -113,13 +118,14 @@ def scatter(obj, ages=[], reddenings=[], outdir='',
     for mi in model_index:
         model_label = 'Model: age=%s' % (model.age[mi])
         plt.plot(model.wavelength, model.flux[mi],
-                 label=model_label, linewidth=0.5,
-                 linestyle='dashed')
+                 label=model_label, linewidth=1.0,
+                 linestyle=next(model_linestyles))
 
     for oi in obsv_index:
         obsv_label = 'Observation: reddening=%s' % (obsv.reddening[oi])
         plt.plot(obsv.wavelength, obsv.flux[oi],
-                 label=obsv_label, linewidth=0.5)
+                 label=obsv_label, linewidth=0.5,
+                 linestyle=next(obsv_linestyles))
 
     plt.title('Flux vs Wavelength\n' + title_format(obj))
     plt.xlabel("Wavelength (Angstroms)")

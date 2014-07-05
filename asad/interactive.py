@@ -67,10 +67,14 @@ def parse_yn(arg, default=False):
         elif choice == 'N':
             return False
         else:
-            raise ValueError(
-                'Unknown choice: %s Assuming: %s' % (choice, default))
+            err_msg = 'Unknown choice: %s Assuming: %s' % (choice, default)
+            error_print(err_msg)
+            raise ValueError(err_msg)
     except Exception as err:
-        error_print(unicode(err))
+        if default:
+            ok_print('YES')
+        else:
+            error_print('NO')
         return default
 
 def parse_input_yn(question, default=False):
@@ -875,9 +879,6 @@ class Run_Shell(Object_Shell):
         if parse_input_yn('Custom age and reddening pairs?'):
             ages = [float(a) for a in safe_input('Ages: ').split(' ')]
             reddenings = [float(r) for r in safe_input('Reddenings: ').split(' ')]
-            if len(reddenings) != len(ages):
-                raise ValueError(
-                    "Must select an equal number of reddenings and ages")
         self.object.do_plot_scatter(self.config['plot_scatter_directory'],
                                     ages=ages, reddenings=reddenings,
                                     format=self.config['plot_output_format'])
