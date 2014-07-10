@@ -712,9 +712,24 @@ class Run_Shell(Object_Shell):
             self.config['observation_wavelength_start']))
 
     @prompt_command
+    def model_interpolation_wavelength_start_no_obsv_smoothed(self):
+        obsv = self.observation.values[0]
+        self.config['observation_interpolation_step'] = obsv.wavelength_step
+        self.model.do_interpolation_wavelength_start('{} {}'.format(
+            self.config['observation_interpolation_step'],
+            self.config['observation_wavelength_start']))
+
+    @prompt_command
     def model_smoothen(self):
         self.config['model_interpolation_step'] = self.config['observation_interpolation_step']
         self.model.do_smoothen(self.config['observation_interpolation_step'])
+
+    @prompt_command
+    def model_smoothen_no_obsv_smoothed(self):
+        self.config['model_interpolation_step'] = safe_default_input(
+            'Model Interpolation Step',
+            self.config['model_interpolation_step'])
+        self.model.do_smoothen(self.config['model_interpolation_step'])
 
     @prompt_command
     def model_wavelength_range(self):
@@ -915,6 +930,7 @@ class Run_Shell(Object_Shell):
                                          format=self.config['plot_output_format'])
     
     def cmdloop(self):
+        observation_is_smoothed = False
         info_print("Assistant mode.")
 
         self.observation_read()
@@ -922,6 +938,8 @@ class Run_Shell(Object_Shell):
             self.observation_wavelength_start()
         if parse_input_yn('Smooth the observation', default=True):
             self.observation_smoothen()
+            observation_is_smoothed = True
+        
         if parse_input_yn('Observation set wavelength end (Angstroms)', default=True):
             self.observation_wavelength_end()
         if parse_input_yn('Output smoothed observations'):
@@ -937,8 +955,13 @@ class Run_Shell(Object_Shell):
         self.update_config()
         
         self.model_read()
-        self.model_interpolation_wavelength_start_2()
-        self.model_smoothen()
+        if observation_is_smoothed:
+            self.model_interpolation_wavelength_start_2()
+            self.model_smoothen()
+        else:
+            if parse_input_yn('Smooth the model', default=True):
+                self.model_interpolation_wavelength_start_no_obsv_smoothed()
+                self.model_smoothen_no_obsv_smoothed()
         self.model_wavelength_range()
         self.model_normalize_wavelength()
         if parse_input_yn('Output models'):

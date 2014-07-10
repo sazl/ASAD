@@ -75,7 +75,7 @@ def surface(obj, levels=15, outdir="",
 
     plt.title(title_format(obj), **font)
     plt.xlabel("log(Age/Year)", **font)
-    plt.ylabel("Reddening", **font)
+    plt.ylabel("E (B-V)", **font)
 
     plt.minorticks_on()
     plt.grid(which='both')
@@ -156,7 +156,7 @@ def scatter_subplot(obj, ages=[], reddenings=[],
     model = obj.model
     obsv = obj.observation
     obsv_name = obj.observation.original_name
-    
+
     def find_indices(values, target):
         return np.searchsorted(values, target)
 
@@ -168,17 +168,18 @@ def scatter_subplot(obj, ages=[], reddenings=[],
     for mi in model_index:
         model_label = 'Model: age=%s' % (model.age[mi])
         plt.plot(model.wavelength, model.flux[mi],
-                 label=model_label, linewidth=0.5,
-                 linestyle='dotted')
-    
+                 label=model_label, linewidth=0.13,
+                 linestyle='solid', color='b')
+
     for oi in obsv_index:
         if obsv_name in original_ages:
             obsv_label = 'Observation: age=%s' % original_ages[obsv_name]
         else:
             obsv_label = 'Observation'
         plt.plot(obsv.wavelength, obsv.flux[oi],
-                 label=obsv_label, linewidth=0.8)
+                 label=obsv_label, linewidth=0.8, linestyle='solid', color='g')
 
+    plt.tick_params(axis='both', which='major', labelsize=10)
     plt.title('[{}]'.format(obsv_name))
     plt.xlabel(u"Wavelength (Angstroms)")
     plt.ylabel("Normalized Flux")
@@ -272,7 +273,7 @@ def surface_error(obj, levels=15, outdir='',
 
     plt.title(title_format(obj), **font)
     plt.xlabel("log(Age/Year)", **font)
-    plt.ylabel("Reddening", **font)
+    plt.ylabel("E (B-V)", **font)
 
     plt.minorticks_on()
     plt.grid(which='both')
@@ -297,10 +298,10 @@ def scatter_tile(objs, nrows, ncols, original_ages=None, outdir='',
             save=False,
             show=False,
             *args, **kwargs):
-    fig, axes = plt.subplots(nrows, ncols, figsize=(16,10))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(11.312,16))
     fig.tight_layout()
     obj_index = 1
-    for i in range(1, nrows+1):        
+    for i in range(1, nrows+1):
         for j in range(1, ncols+1):
             if obj_index > len(objs):
                 return
@@ -309,12 +310,14 @@ def scatter_tile(objs, nrows, ncols, original_ages=None, outdir='',
                             close=False)
             obj_index += 1
 
-    plt.subplots_adjust(hspace = 1.0, wspace=0.3)
+    plt.subplots_adjust(hspace = 0.32, wspace=0.3)
     file_name = fname or 'scatter_tile'
     if save:
         plt.savefig(
             os.path.abspath(os.path.join(outdir, file_name)) + "." + format,
             format=format,
             bbox_inches='tight',
+            orientation='portrait',
+            papertype='a4',
             dpi=800
         )
