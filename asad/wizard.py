@@ -78,8 +78,8 @@ class AsadWizard(QtGui.QWizard):
         interactive.set_not_interactive()
         super(AsadWizard, self).__init__()
         self.addPage(IntroPage())
-        self.addPage(ModelPage())
         self.addPage(ObservationPage())
+        self.addPage(ModelPage())
         self.addPage(ObjectPage())
         self.addPage(PlotPage())
 
@@ -110,8 +110,6 @@ class ModelPage(QtGui.QWizardPage):
             "&Browse...", browseChangeComboBox(self.model_read_combo_box, False))
         self.model_smoothen_label = createLabel("Interpolation Step")
         self.model_smoothen_input = createLineEdit()
-        self.model_interpolation_wavelength_start_label = createLabel("Interpolation Wavelength Start");
-        self.model_interpolation_wavelength_start_input = createLineEdit()
         self.model_wavelength_range_start_label = createLabel("Wavelength Start")
         self.model_wavelength_range_start_input = createLineEdit()
         self.model_wavelength_range_end_label = createLabel("Wavelength End")
@@ -127,7 +125,6 @@ class ModelPage(QtGui.QWizardPage):
     def initializeWidgets(self):
         globalConfig = readConfig()
         comboBoxAddText(self.model_read_combo_box, globalConfig['model_input_directory'])
-        self.model_interpolation_wavelength_start_input.insert(globalConfig['model_interpolation_wavelength_start'])
         self.model_smoothen_input.insert(globalConfig['model_interpolation_step'])
         self.model_wavelength_range_start_input.insert(globalConfig['model_wavelength_start'])
         self.model_wavelength_range_end_input.insert(globalConfig['model_wavelength_end'])
@@ -136,8 +133,6 @@ class ModelPage(QtGui.QWizardPage):
     
     def registerWidgets(self):
         self.registerField("model_read_combo_box", self.model_read_combo_box)
-        self.registerField("model_interpolation_wavelength_start_input",
-                           self.model_interpolation_wavelength_start_input)
         self.registerField("model_smoothen_input", self.model_smoothen_input)
         self.registerField("model_wavelength_range_start_input",
                            self.model_wavelength_range_start_input)
@@ -152,8 +147,6 @@ class ModelPage(QtGui.QWizardPage):
         layout.addWidget(self.model_read_label, 0, 0)
         layout.addWidget(self.model_read_combo_box, 0, 1)
         layout.addWidget(self.model_browse_button, 0, 2)
-        layout.addWidget(self.model_interpolation_wavelength_start_label, 1, 0)
-        layout.addWidget(self.model_interpolation_wavelength_start_input, 1, 1)
         layout.addWidget(self.model_smoothen_label, 2, 0)
         layout.addWidget(self.model_smoothen_input, 2, 1)
         layout.addWidget(self.model_wavelength_range_start_label, 3, 0)
@@ -170,7 +163,6 @@ class ModelPage(QtGui.QWizardPage):
 
     def validatePage(self):
         try:
-            self.interpolation_wavelength_start = float(self.model_interpolation_wavelength_start_input.text())
             self.interpolation_step = float(self.model_smoothen_input.text())
             self.wavelength_start = float(self.model_wavelength_range_start_input.text())
             self.wavelength_end = float(self.model_wavelength_range_end_input.text())
@@ -185,7 +177,6 @@ class ModelPage(QtGui.QWizardPage):
     def commitPage(self):
         globalConfig = readConfig()
         globalConfig['model_input_directory'] = self.model_read_combo_box.currentText()
-        globalConfig['model_interpolation_wavelength_start'] = self.interpolation_wavelength_start
         globalConfig['model_interpolation_step'] = unicode(self.interpolation_step)
         globalConfig['model_wavelength_start'] = unicode(self.wavelength_start)
         globalConfig['model_wavelength_end'] = unicode(self.wavelength_end)
@@ -193,12 +184,20 @@ class ModelPage(QtGui.QWizardPage):
         globalConfig['model_output_directory'] = self.model_output_combo_box.currentText()
         globalConfig.write_config_file()
         runShell = getRunShell()
+        progress = QtGui.QProgressDialog("Processing Models..", "Cancel", 0, 6, self)
+        progress.setWindowModality(QtCore.Qt.WindowModal)
         runShell.model_read()
-        runShell.model_interpolation_wavelength_start()
+        progress.setValue(1)
+        runShell.model_interpolation_wavelength_start_2()
+        progress.setValue(2)
         runShell.model_smoothen()
+        progress.setValue(3)
         runShell.model_wavelength_range()
+        progress.setValue(4)
         runShell.model_normalize_wavelength()
+        progress.setValue(5)
         runShell.model_output()
+        progress.setValue(6)
         runShell.update_config()
 
 #-------------------------------------------------------------------------------
@@ -221,8 +220,6 @@ class ObservationPage(QtGui.QWizardPage):
             "&Browse...", browseChangeComboBox(self.observation_read_combo_box))
         self.observation_smoothen_label = createLabel("Interpolation Step")
         self.observation_smoothen_input = createLineEdit()
-        self.observation_interpolation_wavelength_start_label = createLabel("Interpolation Wavelength Start");
-        self.observation_interpolation_wavelength_start_input = createLineEdit()
         self.observation_reddening_start_label = createLabel("Reddening Start")
         self.observation_reddening_start_input = createLineEdit()
         self.observation_reddening_end_label = createLabel("Reddening End")
@@ -244,7 +241,6 @@ class ObservationPage(QtGui.QWizardPage):
     def initializeWidgets(self):
         globalConfig = readConfig()
         comboBoxAddText(self.observation_read_combo_box, globalConfig['observation_input_directory'])
-        self.observation_interpolation_wavelength_start_input.insert(globalConfig['observation_interpolation_wavelength_start'])
         self.observation_smoothen_input.insert(globalConfig['observation_interpolation_step'])
         self.observation_reddening_start_input.insert(globalConfig['observation_reddening_start'])
         self.observation_reddening_step_input.insert(globalConfig['observation_reddening_step'])
@@ -256,8 +252,6 @@ class ObservationPage(QtGui.QWizardPage):
 
     def registerWidgets(self):
         self.registerField("observation_read_combo_box", self.observation_read_combo_box)
-        self.registerField("observation_interpolation_wavelength_start_input",
-                           self.observation_interpolation_wavelength_start_input)
         self.registerField("observation_smoothen_input", self.observation_smoothen_input)
         self.registerField("observation_reddening_start_input",
                            self.observation_reddening_start_input)
@@ -278,8 +272,6 @@ class ObservationPage(QtGui.QWizardPage):
         layout.addWidget(self.observation_read_label, 0, 0)
         layout.addWidget(self.observation_read_combo_box, 0, 1)
         layout.addWidget(self.observation_browse_button, 0, 2)
-        layout.addWidget(self.observation_interpolation_wavelength_start_label, 1, 0)
-        layout.addWidget(self.observation_interpolation_wavelength_start_input, 1, 1)
         layout.addWidget(self.observation_smoothen_label, 2, 0)
         layout.addWidget(self.observation_smoothen_input, 2, 1)
         layout.addWidget(self.observation_reddening_start_label, 3, 0)
@@ -302,7 +294,6 @@ class ObservationPage(QtGui.QWizardPage):
 
     def validatePage(self):
         try:
-            self.interpolation_wavelength_start = float(self.observation_interpolation_wavelength_start_input.text())
             self.interpolation_step = float(self.observation_smoothen_input.text())
             self.reddening_start = float(self.observation_reddening_start_input.text())
             self.reddening_end = float(self.observation_reddening_end_input.text())
@@ -319,7 +310,6 @@ class ObservationPage(QtGui.QWizardPage):
     def commitPage(self):
         globalConfig = readConfig()
         globalConfig['observation_input_directory'] = self.observation_read_combo_box.currentText()
-        globalConfig['observation_interpolation_wavelength_start'] = self.interpolation_wavelength_start
         globalConfig['observation_interpolation_step'] = unicode(self.interpolation_step)
         globalConfig['observation_reddening_start'] = self.reddening_start
         globalConfig['observation_reddening_step'] = self.reddening_step
@@ -331,15 +321,25 @@ class ObservationPage(QtGui.QWizardPage):
         globalConfig['observation_output_directory'] = self.observation_output_combo_box.currentText()
         globalConfig.write_config_file()
         runShell = getRunShell()
+        progress = QtGui.QProgressDialog("Processing Observations..", "Cancel", 0, 7, self)
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setValue(0)
         runShell.observation_read()
-        runShell.observation_interpolation_wavelength_start()
+        progress.setValue(1)
         runShell.observation_smoothen()
+        progress.setValue(2)
         runShell.observation_smoothen_output()
+        progress.setValue(3)
         runShell.observation_reddening()
+        progress.setValue(4)
         runShell.observation_wavelength_range()
+        progress.setValue(5)
         runShell.observation_normalize_wavelength()
+        progress.setValue(6)
         runShell.observation_output()
+        progress.setValue(7)
         runShell.update_config()
+        progress.reset()
 
 #-------------------------------------------------------------------------------
 
@@ -396,11 +396,18 @@ class ObjectPage(QtGui.QWizardPage):
         globalConfig['object_output_directory'] = self.object_output_combo_box.currentText()
         globalConfig['object_chosen_directory'] = self.object_output_chosen_combo_box.currentText()
         globalConfig.write_config_file()
+        progress = QtGui.QProgressDialog("Processing Objects..", "Cancel", 0, 4, self)
+        progress.setWindowModality(QtCore.Qt.WindowModal)
         runShell = getRunShell()
+        progress.setValue(0)
         runShell.object_generate()
+        progress.setValue(1)
         runShell.object_output()
+        progress.setValue(2)
         runShell.object_calculate_chosen()
+        progress.setValue(3)
         runShell.object_output_chosen()
+        progress.setValue(4)
         runShell.update_config()
 
 #-------------------------------------------------------------------------------
@@ -489,11 +496,19 @@ class PlotPage(QtGui.QWizardPage):
         globalConfig['plot_surface_error_directory'] = self.plot_output_surface_error_combo_box.currentText()
         globalConfig.write_config_file()
         runShell = getRunShell()
+        progress = QtGui.QProgressDialog("Processing Plots..", "Cancel", 0, 5, self)
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setValue(0)
         runShell.plot_output_format()
+        progress.setValue(1)
         runShell.plot_surface_output()
+        progress.setValue(2)
         runShell.plot_scatter_output_aux()
+        progress.setValue(3)
         runShell.plot_residual_output()
+        progress.setValue(4)
         runShell.plot_surface_error_output()
+        progress.setValue(5)
         runShell.update_config()
 
 #-------------------------------------------------------------------------------
