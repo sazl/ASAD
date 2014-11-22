@@ -5,17 +5,17 @@ import numpy as np
 #===============================================================================
 
 class Math(object):
-    
+
     @staticmethod
     def wavelength_interpolate_step(xs, interp=3, step=0.3):
         if interp == step:
             return xs
-        
+
         sample_step = interp / step
         nsample     = int(2*sample_step - 1)
         result_num  = int((len(xs)/sample_step) - 1)
         result      = np.zeros([result_num])
-        
+
         for i in range(result_num):
             tot = 0
             for k in range(nsample):
@@ -47,7 +47,7 @@ class Math(object):
     def flux_interpolate_step(xss, interp, step):
         if interp == step:
             return xss
-        
+
         sample_step  = interp / step
         nsample      = int(2*sample_step - 1)
         result_nrows = xss.shape[0]
@@ -77,7 +77,7 @@ class Math(object):
         result          = np.zeros([result_ncols])
         row             = xss[0]
         first, row_rest = row[0], row[1:]
-        
+
         for i in range(result_ncols):
             tot = 0
             num = i * sample_step
@@ -97,12 +97,25 @@ class Statistics(object):
 
     @staticmethod
     def ks_2_sample_freq_test(xs, ys):
-        pass
+        sorted_xs = sorted(xs)
+        sorted_ys = sorted(ys)
+        for i in range(0, len(xs)-1):
+            sorted_xs[i+1] += sorted_xs[i]
+            sorted_ys[i+1] += sorted_ys[i]
+
+        max_diff = 0
+        total_xs, total_ys = sorted_xs[-1], sorted_ys[-1]
+
+        for i in range(0, len(ys)):
+            n1 = sorted_xs[i] / total_xs;
+            n2 = sorted_ys[i] / total_ys;
+            max_diff = max(abs(n1-n2), max_diff)
+
+        return max_diff
 
     @staticmethod
     def chi_squared_freq_test(xs, ys):
         return np.sum((xs - ys) ** 2)
-
 
 #===============================================================================
 
@@ -202,7 +215,7 @@ class Base(object):
         index = np.searchsorted(self.wavelength, wavelength)
         self.wavelength = self.wavelength[index:]
         self.flux = self.flux[:, index:]
-    
+
     def restrict_wavelength_start_by_interpolation_step(self, interp, wavelength):
         step = interp / self.wavelength_step
         wl = self.wavelength[step:]
@@ -211,7 +224,7 @@ class Base(object):
         wl_start = self.wavelength[wl_start_index + 1]
         self.restrict_wavelength_start(wl_start)
         return wl_start
-    
+
     def wavelength_set_range(self, start, end):
         (index_start, index_end) = self.wavelength_index(start, end)
         return self.wavelength_set_index(index_start, index_end+1)
@@ -225,7 +238,7 @@ class Base(object):
             self.wavelength, interp, step)
         result.flux = Math.flux_interpolate_step(self.flux, interp, step)
         return result
-    
+
     @property
     def name(self):
         return self._name
@@ -246,7 +259,7 @@ class Base(object):
     @wavelength_step.setter
     def wavelength_step(self, wavelength_step):
         self._wavelength_step = wavelength_step
-    
+
     @property
     def num(self):
         return self.flux.shape[0]
@@ -305,7 +318,7 @@ class Model(Base):
         super(Model, self).read_from_path(path)
         model_indices = np.arange(0, 220, 3)
         self.flux = self.flux[model_indices]
-    
+
     @property
     def age_start(self):
         return self.var_start
@@ -326,11 +339,11 @@ class Model(Base):
     @age.setter
     def age(self, age):
         self.var = age
-    
+
 #===============================================================================
 
 class Observation(Base):
-    
+
     def __init__(self,
                  reddening_start = 0,
                  reddening_step = 0.01,
@@ -346,7 +359,7 @@ class Observation(Base):
         b = wavelength * WL_SCALE
         a = (b ** WL_EXPT) + WL_ADD
         return a
-    
+
     def calculate_A(self):
         return np.array([self.wl_scale(w) for w in self.wavelength])
 
@@ -367,7 +380,7 @@ class Observation(Base):
             (10**(0.4*3.2*Z[i]*R)) * flux_initial[i] for i in range(len(Z))
         ])
         return flux.transpose()
-    
+
     def reddening_shift(self, reddening, step):
         result = copy.deepcopy(self)
         result.flux = self.find_flux(reddening, step)
@@ -439,7 +452,7 @@ class Asad(object):
                 self.read_from_path(os.path.abspath(self.path))
                 if calculate:
                     self.calculate_chosen_model()
-    
+
     def read_from_path(self, path, num_observation=51):
         mat = np.array(np.loadtxt(path).transpose())
         self.observation            = Observation()
@@ -460,14 +473,14 @@ class Asad(object):
         fmt = '{:<40} {:>10f} {:>10f}\n'.format(
             self.name, self.min_age, self.min_reddening)
         return unicode(fmt)
-    
+
     def normalize(self, wavelength):
         result = copy.deepcopy(self)
         result.observation = result.observation.normalize(wavelength)
         result.model = result.model.normalize(wavelength)
         return result
-    
-    
+
+
     def calculate_stat(self):
         self.stat = np.zeros([self.num_observation, self.num_model])
         for i in range(self.num_observation):
@@ -475,7 +488,7 @@ class Asad(object):
                 self.stat[i,j] = self.stat_test(
                     self.observation.flux[i], self.model.flux[j])
         return self.stat
-    
+
     def calculate_chosen_model(self):
         self.calculate_stat()
         self.min_observation = np.argmin(np.min(self.stat, axis=1))
@@ -483,7 +496,7 @@ class Asad(object):
         self.chosen_model = np.argmin(self.stat, axis=1)
         self.min_stat = self.stat[self.min_observation, self.min_model]
         return self.chosen_model
-    
+
     def calculate_stat_delta_level(self, delta=1.0):
         error = (np.abs(self.stat - self.min_stat) < delta)
         reddening_index = np.where([np.any(e) for e in error])[0]
@@ -514,14 +527,14 @@ class Asad(object):
     @model.setter
     def model(self, model):
         self._model = model
-    
+
     @property
     def stat_test(self):
         return self._stat_test
     @stat_test.setter
     def stat_test(self, stat_test):
         self._stat_test = stat_test
-    
+
     @property
     def path(self):
         return self._path
@@ -543,35 +556,35 @@ class Asad(object):
     @min_stat.setter
     def min_stat(self, min_stat):
         self._min_stat = min_stat
-    
+
     @property
     def min_observation(self):
         return self._min_observation
     @min_observation.setter
     def min_observation(self, min_observation):
         self._min_observation = min_observation
-    
+
     @property
     def min_model(self):
         return self._min_model
     @min_model.setter
     def min_model(self, min_model):
         self._min_model = min_model
-    
+
     @property
     def min_reddening(self):
         return self.observation.reddening[self.min_observation]
-    
+
     @property
     def min_age(self):
         return self.model.age[self.min_model]
-    
+
     @property
     def stat(self):
         return self._stat
     def stat(self, stat):
         self._stat = stat
-    
+
     @property
     def chosen_model(self):
         return self._chosen_model
@@ -585,6 +598,6 @@ class Asad(object):
     @error.setter
     def error(self, value):
         self._error = value
-    
+
 
 #===============================================================================

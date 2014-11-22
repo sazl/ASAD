@@ -358,7 +358,7 @@ class Base_Shell(Shell):
         except TypeError as type_error:
             error_print('wavelength end must be a float')
             raise type_error
-    
+
     def do_set_wavelength_range(self, arg):
         try:
             (start, end) = parse_tuple(arg, expected=2, type=float)
@@ -401,7 +401,7 @@ class Base_Shell(Shell):
             wl_start = base.restrict_wavelength_start_by_interpolation_step(interp, wavelength)
             ok_print('{}: set starting wavelength to: {} using interpolation step: {}'.format(
                  base.name, wl_start, interp))
-            
+
     def do_smoothen(self, arg):
         try:
             args = parse_args(arg, expected=1)
@@ -496,6 +496,7 @@ class Object_Shell(Base_Shell):
 
     def do_calculate_chosen_model(self, arg):
         try:
+            stat_test = pyasad.Statistics.ks_2_sample_freq_test if arg == 'ks2' else pyasad.Statistics.chi_squared_freq_test
             for obj in self.values:
                 if len(obj.model.wavelength) != len(obj.model.wavelength):
                     raise Exception(
@@ -504,6 +505,7 @@ class Object_Shell(Base_Shell):
                              obj.observation.name, obj.model.name,
                              obj.num_observation, obj.num_model
                          ))
+                obj.stat_test = stat_test
                 obj.calculate_chosen_model()
                 ok_print('Calculated Min Age and Reddening: %s' % obj.name)
         except Exception as err:
@@ -534,7 +536,8 @@ class Object_Shell(Base_Shell):
         path = os.path.abspath(parse_args(arg, expected=1)[0])
         if os.path.isdir(path):
             for obj in self.values:
-                fpath = os.path.join(path, 'result_of_%s' % obj.name)
+                fpath = os.path.join(path, config['object_test_statistic']
+                    + '_' + 'result_of_%s' % obj.name)
                 with io.open(fpath, 'w') as f:
                     f.write(obj.format_chosen())
                     if config:
@@ -643,7 +646,7 @@ class Object_Shell(Base_Shell):
             ok_print('Plotted scatter tile %s' % path)
         except Exception as err:
             error_print(unicode(err))
-            raise err        
+            raise err
 
     @property
     def base(self):
@@ -812,7 +815,7 @@ class Run_Shell(Object_Shell):
             self.config['observation_wavelength_end'])
         self.observation.do_set_wavelength_end(
             self.config['observation_wavelength_end'])
-    
+
     @prompt_command
     def observation_wavelength_range(self):
         print('Current Wavelength Range: ')
@@ -860,8 +863,12 @@ class Run_Shell(Object_Shell):
         self.object.do_write(self.config['object_output_directory'])
 
     def object_calculate_chosen(self):
-        print('Calculating best match of age and reddening (chi-squared)...')
-        self.object.do_calculate_chosen_model('')
+        self.config['object_test_statistic'] = safe_default_input(
+            'Statistic (' + ', '.join(pyasad.Statistics.STAT_TEST_NAMES) + ')',
+            self.config['object_test_statistic'])
+        print('Calculating best match of age and reddening ({})...'.format(
+            self.config['object_test_statistic']))
+        self.object.do_calculate_chosen_model(self.config['object_test_statistic'])
 
     @prompt_command
     def object_output_chosen(self):
@@ -928,7 +935,7 @@ class Run_Shell(Object_Shell):
     def plot_scatter_tile_output(self):
         self.object.do_plot_scatter_tile(self.config['plot_surface_error_directory'],
                                          format=self.config['plot_output_format'])
-    
+
     def cmdloop(self):
         observation_is_smoothed = False
         info_print("Assistant mode.")
@@ -939,7 +946,7 @@ class Run_Shell(Object_Shell):
         if parse_input_yn('Smooth the observation', default=True):
             self.observation_smoothen()
             observation_is_smoothed = True
-        
+
         if parse_input_yn('Observation set wavelength end (Angstroms)', default=True):
             self.observation_wavelength_end()
         if parse_input_yn('Output smoothed observations'):
@@ -953,7 +960,7 @@ class Run_Shell(Object_Shell):
             self.observation_output()
 
         self.update_config()
-        
+
         self.model_read()
         if observation_is_smoothed:
             self.model_interpolation_wavelength_start_2()
@@ -968,7 +975,7 @@ class Run_Shell(Object_Shell):
             self.model_output()
 
         self.update_config()
-        
+
         self.object_generate()
         if parse_input_yn('Output object files'):
             self.object_output()
