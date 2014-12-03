@@ -97,21 +97,11 @@ class Statistics(object):
 
     @staticmethod
     def ks_2_sample_freq_test(xs, ys):
-        sorted_xs = sorted(xs)
-        sorted_ys = sorted(ys)
-        for i in range(0, len(xs)-1):
-            sorted_xs[i+1] += sorted_xs[i]
-            sorted_ys[i+1] += sorted_ys[i]
-
-        max_diff = 0
-        total_xs, total_ys = sorted_xs[-1], sorted_ys[-1]
-
-        for i in range(0, len(ys)):
-            n1 = sorted_xs[i] / total_xs;
-            n2 = sorted_ys[i] / total_ys;
-            max_diff = max(abs(n1-n2), max_diff)
-
-        return max_diff
+        csx = np.cumsum(xs)
+        csy = np.cumsum(ys)
+        cpx = csx / float(csx[-1])
+        cpy = csy / float(csy[-1])
+        return np.max(np.abs(cpx - cpy))
 
     @staticmethod
     def chi_squared_freq_test(xs, ys):
