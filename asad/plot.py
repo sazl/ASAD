@@ -67,7 +67,7 @@ def surface(obj, levels=15, outdir="",
     CF.cmap.set_under('k')
     CF.cmap.set_over('w')
     cb = fig.colorbar(CF)
-    cb.set_label("Inverse Chi-Squared Statistic")
+    cb.set_label("Test Statistic")
     plt.scatter([obj.min_age], [obj.min_reddening], c='w', s=350, marker="*")
 
     plt.xlim([obj.model.age[0], obj.model.age[-1]])
