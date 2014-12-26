@@ -67,12 +67,6 @@ INTERACTIVE_OPTIONS = [
         'help'    : 'Assistant mode'
     }),
 
-    (['-w', '--web'], {
-        'action'  : 'store_true',
-        'default' : False,
-        'help'    : 'Web application mode'
-    }),
-
     (['-I', '--script'], {
         'type'    : str,
         'default' : None,
@@ -179,10 +173,7 @@ def process(args):
         interactive.Run_Shell().cmdloop()
     elif args.gui:
         wizard.init()
-    elif args.web:
-        pass
-
-    if args.script:
+    elif args.script:
         for s in args.script:
             interactive.Main_Shell().execute(s)    
 

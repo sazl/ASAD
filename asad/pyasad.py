@@ -1,6 +1,7 @@
 from __future__ import print_function
 import copy, io, os, os.path, uuid
 import numpy as np
+from pprint import pprint
 
 #===============================================================================
 
@@ -205,7 +206,7 @@ class Base(object):
         index = np.searchsorted(self.wavelength, wavelength)
         self.wavelength = self.wavelength[index:]
         self.flux = self.flux[:, index:]
-
+        
     def restrict_wavelength_start_by_interpolation_step(self, interp, wavelength):
         step = interp / self.wavelength_step
         wl = self.wavelength[step:]
@@ -296,6 +297,65 @@ class Base(object):
 
 class Model(Base):
 
+    PADOVA_WL_START = 3322
+    PADOVA_WL_END   = 9300
+
+    def read_del_gato_model(self, path):
+        super(Model, self).read_from_path(path)
+        model_indices = np.arange(0, 220, 3)
+        self.flux = self.flux[model_indices]
+
+    def read_padova_model(self, path):
+        f = open(path, 'r')
+        read_float_line = lambda: map(float, f.readline().split())
+        spectra_hd = read_float_line()
+        num_spectra, spectra = int(spectra_hd[0]), spectra_hd[1:]
+        num_spectra_left = num_spectra - len(spectra)
+        
+        while num_spectra_left > 0:
+            spectra_line = read_float_line()
+            spectra.append(spectra_line)
+            num_spectra_left -= len(spectra_line)
+
+        for i in range(6):
+            f.readline()
+
+        wl_hd = read_float_line()
+        num_wl, wavelength = int(wl_hd[0]), wl_hd[1:]
+        num_wl_left = num_wl - len(wavelength)
+        
+        while num_wl_left > 0:
+            wl_line = read_float_line()
+            wavelength += wl_line
+            num_wl_left -= len(wl_line)
+
+        total_flux = []
+        contents = iter(f.read().split())
+        for i in range(num_spectra):
+            flux = []
+            num_flux = int(next(contents))
+            for j in range(num_flux):
+                flux.append(float(next(contents)))
+
+            num_skip = int(next(contents))
+            for k in range(num_skip):
+                next(contents)
+            total_flux.append(flux)
+
+        f.close()
+        basename = os.path.basename(path)
+        (name, ext) = os.path.splitext(basename)
+        self.name = basename
+        self.original_name = basename
+        self.wavelength = np.array(wavelength)
+        self.flux = np.array(total_flux)
+
+        result = self.wavelength_set_range(
+            Model.PADOVA_WL_START, Model.PADOVA_WL_END)
+        self.wavelength = result.wavelength
+        self.wavelength_step = result.wavelength_step
+        self.flux = result.flux
+
     def __init__(self,
                  age_start=6.6,
                  age_step=0.05,
@@ -305,9 +365,7 @@ class Model(Base):
         self.age_step = age_step
 
     def read_from_path(self, path):
-        super(Model, self).read_from_path(path)
-        model_indices = np.arange(0, 220, 3)
-        self.flux = self.flux[model_indices]
+        self.read_padova_model(path)
 
     @property
     def age_start(self):
@@ -374,7 +432,6 @@ class Observation(Base):
     def reddening_shift(self, reddening, step):
         result = copy.deepcopy(self)
         result.flux = self.find_flux(reddening, step)
-        print(result.wavelength_str())
         return result
 
     def smoothen(self, interp, name='', step=0):

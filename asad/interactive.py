@@ -1009,7 +1009,10 @@ class Main_Shell(cmd.Cmd):
         "Execute a command script"
         with io.open(os.path.abspath(path), 'r') as f:
             for line in f.readlines():
-                self.onecmd(line)
+                if line.lstrip(' ').startswith('#'):
+                    pass
+                else:
+                    self.onecmd(line)
 
     def emptyline(self):
         pass
