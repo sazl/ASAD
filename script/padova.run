@@ -11,7 +11,7 @@ model interpolation_wavelength_start 3.0 3638
 model smoothen 3.0
 model set wavelength_range (3638, 6230)
 model normalize 5870
-# model write 'data/models'
+model write 'data/models'
 
 object new (0,-1) (0,-1)
 object calculate_chosen_model

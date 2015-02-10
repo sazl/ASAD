@@ -441,10 +441,6 @@ class PlotPage(QtGui.QWizardPage):
         self.plot_output_residual_combo_box = createComboBox()
         self.plot_output_residual_browse = createButton(
             '&Browse...', browseChangeComboBox(self.plot_output_residual_combo_box))
-        self.plot_output_surface_error_label = createLabel("Output Surface Error")
-        self.plot_output_surface_error_combo_box = createComboBox()
-        self.plot_output_surface_error_browse = createButton(
-            '&Browse...', browseChangeComboBox(self.plot_output_surface_error_combo_box))
 
     def initializeWidgets(self):
         globalConfig = readConfig()
@@ -452,14 +448,12 @@ class PlotPage(QtGui.QWizardPage):
         comboBoxAddText(self.plot_output_surface_combo_box, globalConfig['plot_surface_directory'])
         comboBoxAddText(self.plot_output_scatter_combo_box, globalConfig['plot_scatter_directory'])
         comboBoxAddText(self.plot_output_residual_combo_box, globalConfig['plot_residual_directory'])
-        comboBoxAddText(self.plot_output_surface_error_combo_box, globalConfig['plot_surface_error_directory'])
 
     def registerWidgets(self):
         self.registerField('plot_output_format_combo_box', self.plot_output_format_combo_box)
         self.registerField('plot_output_surface_combo_box', self.plot_output_surface_combo_box)
         self.registerField('plot_output_scatter_combo_box', self.plot_output_scatter_combo_box)
         self.registerField('plot_output_residual_combo_box', self.plot_output_residual_combo_box)
-        self.registerField('plot_output_surface_error_combo_box', self.plot_output_surface_error_combo_box)
 
     def initializeLayout(self):
         layout = QtGui.QGridLayout()
@@ -474,9 +468,6 @@ class PlotPage(QtGui.QWizardPage):
         layout.addWidget(self.plot_output_residual_label, 3, 0)
         layout.addWidget(self.plot_output_residual_combo_box, 3, 1)
         layout.addWidget(self.plot_output_residual_browse, 3, 2)
-        layout.addWidget(self.plot_output_surface_error_label, 4, 0)
-        layout.addWidget(self.plot_output_surface_error_combo_box, 4, 1)
-        layout.addWidget(self.plot_output_surface_error_browse, 4, 2)
         self.setLayout(layout)
 
     def validatePage(self):
@@ -493,7 +484,6 @@ class PlotPage(QtGui.QWizardPage):
         globalConfig['plot_surface_directory'] = self.plot_output_surface_combo_box.currentText()
         globalConfig['plot_scatter_directory'] = self.plot_output_scatter_combo_box.currentText()
         globalConfig['plot_residual_directory'] = self.plot_output_residual_combo_box.currentText()
-        globalConfig['plot_surface_error_directory'] = self.plot_output_surface_error_combo_box.currentText()
         globalConfig.write_config_file()
         runShell = getRunShell()
         progress = QtGui.QProgressDialog("Processing Plots..", "Cancel", 0, 5, self)
@@ -507,8 +497,6 @@ class PlotPage(QtGui.QWizardPage):
         progress.setValue(3)
         runShell.plot_residual_output()
         progress.setValue(4)
-        runShell.plot_surface_error_output()
-        progress.setValue(5)
         runShell.update_config()
 
 #-------------------------------------------------------------------------------

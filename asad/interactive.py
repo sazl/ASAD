@@ -8,6 +8,7 @@ import os, os.path
 import re
 import shlex
 import sys
+import time
 
 from StringIO import StringIO
 from pprint import pprint
@@ -206,6 +207,7 @@ class Base_Shell(Shell):
             base = self.asad_type(path=path)
             self.values.append(base)
             ok_print("Read OK: {}".format(path))
+            ok_print("Wavelength Step: {}".format(base.wavelength_step))
         except Exception as err:
             error_print("Failed to read file")
             error_print(unicode(err))
@@ -255,7 +257,8 @@ class Base_Shell(Shell):
             return
 
         for base in self.values:
-            fpath = os.path.join(path, prefix + base.name)
+            tstr = time.strftime('%H_%M_%S+%d-%m-%y', time.localtime())
+            fpath = os.path.join(path, prefix + base.name + '_' + tstr)
             if os.path.exists(fpath):
                 error_print('{} already exists, Skipping'.format(fpath))
                 raise Exception('file already exists')
@@ -989,8 +992,6 @@ class Run_Shell(Object_Shell):
             self.plot_scatter_output()
         if parse_input_yn('Output residual plots'):
             self.plot_residual_output()
-        if parse_input_yn('Output surface error plots'):
-            self.plot_surface_error_output()
         if parse_input_yn('Output scatter tile plot'):
             self.plot_scatter_tile_output()
         self.update_config()
