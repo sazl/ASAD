@@ -1,5 +1,5 @@
 from __future__ import print_function
-import copy, io, os, os.path, uuid
+import copy, io, math, os, os.path, uuid
 import numpy as np
 from pprint import pprint
 
@@ -118,6 +118,7 @@ class Base(object):
         self._wavelength_step = 0
         self._wavelength      = np.array([])
         self._flux            = np.array([])
+        self._var             = None
         self._var_start       = 0
         self._var_step        = 0
         if path:
@@ -289,9 +290,15 @@ class Base(object):
 
     @property
     def var(self):
-        return np.arange(self.var_start,
-                         self.var_start + (self.var_step * self.num),
-                         self.var_step)[:self.num]
+        if not self._var is None:
+            return self._var
+        else:
+            return np.arange(self.var_start,
+                             self.var_start + (self.var_step * self.num),
+                             self.var_step)[:self.num]
+    @var.setter
+    def var(self, var):
+        self._var = var
 
 #===============================================================================
 
@@ -309,8 +316,8 @@ class Model(Base):
         f = open(path, 'r')
         read_float_line = lambda: map(float, f.readline().split())
         spectra_hd = read_float_line()
-        num_spectra, spectra = int(spectra_hd[0]), spectra_hd[1:]
-        num_spectra_left = num_spectra - len(spectra)
+        num_spectra, spectra = int(spectra_hd[0]), [spectra_hd[1:]]
+        num_spectra_left = num_spectra - len(spectra[0])
         
         while num_spectra_left > 0:
             spectra_line = read_float_line()
@@ -355,6 +362,17 @@ class Model(Base):
         self.wavelength = result.wavelength
         self.wavelength_step = result.wavelength_step
         self.flux = result.flux
+        
+        print(spectra)
+        spectra = reduce(lambda x,y: x+y, spectra)
+        age = map(math.log10, spectra[1:])
+        age[0] = spectra[0]
+        print(age)
+        age_start = age[1]
+        age_step = age[2] - age[1]
+        self.age = np.array(age)
+        self.age_start = age_start
+        self.age_step = age_step
 
     def __init__(self,
                  age_start=6.6,
