@@ -363,7 +363,7 @@ class Model(Base):
         self.flux = result.flux
         
         spectra = reduce(lambda x,y: x+y, spectra)
-        age = [spectra[0]] + map(lambda x: round(math.log10(x), 4), spectra[1:])
+        age = [spectra[0]] + map(lambda x: round(math.log10(x), 3), spectra[1:])
         age_start = age[1]
         age_step = age[2] - age[1]
         self.age = np.array(age)
