@@ -363,11 +363,9 @@ class Model(Base):
         self.wavelength_step = result.wavelength_step
         self.flux = result.flux
         
-        print(spectra)
         spectra = reduce(lambda x,y: x+y, spectra)
-        age = map(math.log10, spectra[1:])
+        age = map(lambda x: round(math.log10(x), 4), spectra[1:])
         age[0] = spectra[0]
-        print(age)
         age_start = age[1]
         age_step = age[2] - age[1]
         self.age = np.array(age)
