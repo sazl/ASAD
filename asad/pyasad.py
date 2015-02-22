@@ -355,20 +355,22 @@ class Model(Base):
         self.name = basename
         self.original_name = basename
         self.wavelength = np.array(wavelength)
-        self.flux = np.array(total_flux)
+        self.flux = np.array(total_flux[1:])
         result = self.wavelength_set_range(
             Model.PADOVA_WL_START, Model.PADOVA_WL_END)
         self.wavelength = result.wavelength
         self.wavelength_step = result.wavelength_step
         self.flux = result.flux
         
-        spectra = reduce(lambda x,y: x+y, spectra)
-        age = [spectra[0]] + map(lambda x: round(math.log10(x), 3), spectra[1:])
-        age_start = age[1]
-        age_step = age[2] - age[1]
+        spectra = reduce(lambda x,y: x+y, spectra)[1:]
+        age = map(lambda x: round(math.log10(x), 3), spectra)
+        age_start = age[0]
+        age_step = age[1] - age[0]
         self.age = np.array(age)
         self.age_start = age_start
         self.age_step = age_step
+
+        print("\n\n\n\n", len(age), self.wavelength.shape, self.flux.shape)
 
     def __init__(self,
                  age_start=6.6,
