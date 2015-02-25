@@ -207,7 +207,7 @@ class Base(object):
         index = np.searchsorted(self.wavelength, wavelength)
         self.wavelength = self.wavelength[index:]
         self.flux = self.flux[:, index:]
-        
+
     def restrict_wavelength_start_by_interpolation_step(self, interp, wavelength):
         step = interp / self.wavelength_step
         wl = self.wavelength[step:]
@@ -304,8 +304,10 @@ class Base(object):
 
 class Model(Base):
 
-    PADOVA_WL_START = 3322
-    PADOVA_WL_END   = 9300
+    PADOVA_WL_START     = 3322
+    PADOVA_WL_END       = 9300
+    PADOVA_ROUND_DIGITS = 2
+    PADOVA_AGE_END      = 10.10
 
     def read_del_gato_model(self, path):
         super(Model, self).read_from_path(path)
@@ -318,7 +320,7 @@ class Model(Base):
         spectra_hd = read_float_line()
         num_spectra, spectra = int(spectra_hd[0]), [spectra_hd[1:]]
         num_spectra_left = num_spectra - len(spectra[0])
-        
+
         while num_spectra_left > 0:
             spectra_line = read_float_line()
             spectra.append(spectra_line)
@@ -330,7 +332,7 @@ class Model(Base):
         wl_hd = read_float_line()
         num_wl, wavelength = int(wl_hd[0]), wl_hd[1:]
         num_wl_left = num_wl - len(wavelength)
-        
+
         while num_wl_left > 0:
             wl_line = read_float_line()
             wavelength += wl_line
@@ -355,22 +357,22 @@ class Model(Base):
         self.name = basename
         self.original_name = basename
         self.wavelength = np.array(wavelength)
-        self.flux = np.array(total_flux[1:])
+
+        spectra = reduce(lambda x,y: x+y, spectra)[1:]
+        age = map(lambda x: round(math.log10(x), Model.PADOVA_ROUND_DIGITS), spectra)
+        age_end_index = np.searchsorted(age, Model.PADOVA_AGE_END)+1
+        age_start = age[0]
+        age_step = age[1] - age[0]
+        self.age = np.array(age[:age_end_index])
+        self.age_start = age_start
+        self.age_step = age_step
+
+        self.flux = np.array(total_flux[1:age_end_index+1])
         result = self.wavelength_set_range(
             Model.PADOVA_WL_START, Model.PADOVA_WL_END)
         self.wavelength = result.wavelength
         self.wavelength_step = result.wavelength_step
         self.flux = result.flux
-        
-        spectra = reduce(lambda x,y: x+y, spectra)[1:]
-        age = map(lambda x: round(math.log10(x), 3), spectra)
-        age_start = age[0]
-        age_step = age[1] - age[0]
-        self.age = np.array(age)
-        self.age_start = age_start
-        self.age_step = age_step
-
-        print("\n\n\n\n", len(age), self.wavelength.shape, self.flux.shape)
 
     def __init__(self,
                  age_start=6.6,
