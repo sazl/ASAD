@@ -992,8 +992,6 @@ class Run_Shell(Object_Shell):
             self.plot_scatter_output()
         if parse_input_yn('Output residual plots'):
             self.plot_residual_output()
-        if parse_input_yn('Output scatter tile plot'):
-            self.plot_scatter_tile_output()
         self.update_config()
 
 #==============================================================================
