@@ -4,6 +4,7 @@ import cmd
 import contextlib
 import io
 import glob
+import math
 import os, os.path
 import re
 import shlex
@@ -651,6 +652,21 @@ class Object_Shell(Base_Shell):
             error_print(unicode(err))
             raise err
 
+    def do_plot_surface_tile(self, arg, format=''):
+        try:
+            path = os.path.abspath(parse_args(arg, expected=1)[0])
+            if not os.path.isdir(path):
+                raise RuntimeError('Must be a directory')
+            obj_len = len(self.values)
+            ncols = 3
+            nrows = int(math.ceil(float(obj_len) / ncols))
+            plot.surface_tile(self.values, nrows, ncols, outdir=path,
+                              save=True, format=format)
+            ok_print('Plotted surface tile %s' % path)
+        except Exception as err:
+            error_print(unicode(err))
+            raise err
+    
     @property
     def base(self):
         return self._base
@@ -936,7 +952,12 @@ class Run_Shell(Object_Shell):
 
     @prompt_command
     def plot_scatter_tile_output(self):
-        self.object.do_plot_scatter_tile(self.config['plot_surface_error_directory'],
+        self.object.do_plot_scatter_tile(self.config['plot_scatter_tile_directory'],
+                                         format=self.config['plot_output_format'])
+
+    @prompt_command
+    def plot_surface_tile_output(self):
+        self.object.do_plot_surface_tile(self.config['plot_surface_tile_directory'],
                                          format=self.config['plot_output_format'])
 
     def cmdloop(self):
@@ -992,6 +1013,8 @@ class Run_Shell(Object_Shell):
             self.plot_scatter_output()
         if parse_input_yn('Output residual plots'):
             self.plot_residual_output()
+        if parse_input_yn('Output surface tile plot'):
+            self.plot_surface_tile_output()
         self.update_config()
 
 #==============================================================================

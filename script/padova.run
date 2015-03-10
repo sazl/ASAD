@@ -16,6 +16,7 @@ model write 'data/models'
 object new (0,-1) (0,-1)
 object calculate_chosen_model
 # object write 'data/objects'
-object write_chosen 'data/objects'
+# object write_chosen 'data/objects'
 # object plot surface "data/plots" "png"
 # object plot scatter "data/plots" "png"
+object plot surface_tile "data/plots" "png"

@@ -26,6 +26,12 @@ font = {
     'fontsize' : 22
 }
 
+small_font = {
+    'fontname' : 'Sans',
+    'fontsize' : 10
+}
+
+
 def model_name_format(model_name):
     m = re.search('\.z(\d{3})', model_name)
     if not m:
@@ -91,6 +97,38 @@ def surface(obj, levels=15, outdir="",
     if show:
         plt.show()
     plt.close()
+
+def surface_subplot(obj, levels=15,
+            labels=False,
+            *args, **kwargs):
+#    mpl.rcParams = dict(mpl.rcParams, **options)
+    NL = levels
+    x  = obj.model.age
+    y  = obj.observation.reddening
+    z  = 1.0 / np.array(obj.stat)
+
+#    fig = plt.figure()
+#    border_width = 0.10
+#    border_height = 0.07
+#    ax_size = [0+border_width, 0+border_height,
+#               1-0.5*border_width, 1-2*border_height]
+#    ax = fig.add_axes(ax_size)
+
+    C  = plt.contour(x, y, z, NL, colors=['k'], linewidths=0.10)
+    if labels: plt.clabel(C, inline=1, fontsize=10, linewidths=0.10)
+    CF = plt.contourf(x, y, z, NL, alpha=0.85, cmap=cm.jet)
+    CF.cmap.set_under('k')
+    CF.cmap.set_over('w')
+#    cb = fig.colorbar(CF)
+#    cb.set_label("Test Statistic")
+    plt.scatter([obj.min_age], [obj.min_reddening], c='w', s=350, marker="*")
+    plt.xlim([obj.model.age[0], obj.model.age[-1]])
+    plt.ylim([obj.observation.reddening[0], obj.observation.reddening[-1]])
+    plt.title(title_format(obj), **small_font)
+    plt.xlabel("log(Age/Year)", **small_font)
+    plt.ylabel("E (B-V)", **small_font)
+    plt.minorticks_on()
+    plt.grid(which='both')
 
 def scatter(obj, ages=[], reddenings=[], outdir='',
             fname='',
@@ -289,6 +327,46 @@ def surface_error(obj, levels=15, outdir='',
         plt.show()
     plt.close()
 
+def tile_plot(tile_subplot, objs, nrows, ncols, outdir='',
+            fname='',
+            format='eps',
+            title='',
+            xlabel='',
+            ylabel='',
+            save=False,
+            show=False,
+            *args, **kwargs):
+    fig, axes = plt.subplots(nrows, ncols, figsize=(11.312,16))
+    fig.tight_layout()
+    obj_index = 1
+    for i in range(1, nrows+1):
+        for j in range(1, ncols+1):
+            plt.subplot(nrows, ncols, obj_index)
+            if obj_index <= len(objs):
+                tile_subplot(objs[obj_index-1])
+            else:
+                plt.plot()
+                plt.axis("off")
+            obj_index += 1
+
+    plt.subplots_adjust(hspace = 0.32, wspace=0.3)
+    file_name = fname or 'surface_tile'
+
+    if save:
+        plt.savefig(
+            os.path.abspath(os.path.join(outdir, file_name)) + "." + format,
+            format=format,
+            bbox_inches='tight',
+            orientation='portrait',
+            papertype='a4',
+            dpi=800
+        )
+    plt.close()
+
+def surface_tile(*args, **kwargs):
+    tile_plot(surface_subplot, *args, **kwargs)
+
+"""
 def scatter_tile(objs, nrows, ncols, original_ages=None, outdir='',
             fname='',
             format='eps',
@@ -321,3 +399,4 @@ def scatter_tile(objs, nrows, ncols, original_ages=None, outdir='',
             papertype='a4',
             dpi=800
         )
+"""
