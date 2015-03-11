@@ -729,8 +729,9 @@ class Run_Shell(Object_Shell):
     @prompt_command
     def model_read(self):
         self.config['model_format'] = safe_default_input(
-            'Model Format',
+            'Model Format (' + ', '.join(pyasad.Model.MODEL_FORMATS) + ')',
             self.config['model_format'])
+        ok_print("Model format set to {}".format(self.config['model_format']))
         self.config['model_input_directory'] = safe_default_input(
             'Model path',
             self.config['model_input_directory'])

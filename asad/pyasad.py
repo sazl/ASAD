@@ -375,7 +375,7 @@ class Model(Base):
         self.wavelength_step = result.wavelength_step
         self.flux = result.flux
 
-    def read_miles_model(path):
+    def read_miles_model(self, path):
         super(Model, self).read_from_path(path)
         print('here')
         with open(path) as f:
@@ -389,7 +389,7 @@ class Model(Base):
                  path=None,
                  format=None,
                  *args, **kwargs):
-        super(Model, self).__init__(path, *args, **kwargs)
+        super(Model, self).__init__(path=None, *args, **kwargs)
         self.age_start = age_start
         self.age_step = age_step
         self.read_from_path(path, format=format)
@@ -399,7 +399,7 @@ class Model(Base):
             self.read_del_gato_model(path)
         elif format == 'galaxev':
             self.read_galaxev_model(path)
-        else:
+        elif format == 'miles':
             self.read_miles_model(path)
 
     @property
