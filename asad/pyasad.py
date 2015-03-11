@@ -94,7 +94,7 @@ class Math(object):
 
 class Statistics(object):
 
-    STAT_TEST_NAMES = ['chi-squared', 'ks2']
+    STAT_TEST_NAMES = ['chi-squared', 'ks']
 
     @staticmethod
     def ks_2_sample_freq_test(xs, ys):
@@ -134,7 +134,7 @@ class Base(object):
         out.flush()
         return out.getvalue()
 
-    def read_from_path(self, path):
+    def read_from_path(self, path, *args, **kwargs):
         mat = np.array(np.loadtxt(path).transpose())
         basename = os.path.basename(path)
         (name, ext) = os.path.splitext(basename)
@@ -308,13 +308,14 @@ class Model(Base):
     PADOVA_WL_END       = 9300
     PADOVA_ROUND_DIGITS = 2
     PADOVA_AGE_END      = 10.10
+    MODEL_FORMATS       = ['asad', 'galaxev', 'miles']
 
     def read_del_gato_model(self, path):
         super(Model, self).read_from_path(path)
         model_indices = np.arange(0, 220, 3)
         self.flux = self.flux[model_indices]
 
-    def read_padova_model(self, path):
+    def read_galaxev_model(self, path):
         f = open(path, 'r')
         read_float_line = lambda: map(float, f.readline().split())
         spectra_hd = read_float_line()
@@ -374,16 +375,32 @@ class Model(Base):
         self.wavelength_step = result.wavelength_step
         self.flux = result.flux
 
+    def read_miles_model(path):
+        super(Model, self).read_from_path(path)
+        print('here')
+        with open(path) as f:
+            self.age = np.fromstring(f.readline().lstrip('#'), dtype=float, sep=' ')
+            self.age_start = self.age[0]
+            self.age_step = self.age[1] - self.age[0]
+
     def __init__(self,
                  age_start=6.6,
                  age_step=0.05,
+                 path=None,
+                 format=None,
                  *args, **kwargs):
-        super(Model, self).__init__(*args, **kwargs)
+        super(Model, self).__init__(path, *args, **kwargs)
         self.age_start = age_start
         self.age_step = age_step
+        self.read_from_path(path, format=format)
 
-    def read_from_path(self, path):
-        self.read_padova_model(path)
+    def read_from_path(self, path, format='asad'):
+        if format == 'asad':
+            self.read_del_gato_model(path)
+        elif format == 'galaxev':
+            self.read_galaxev_model(path)
+        else:
+            self.read_miles_model(path)
 
     @property
     def age_start(self):

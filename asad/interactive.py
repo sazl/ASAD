@@ -428,6 +428,18 @@ class Base_Shell(Shell):
 class Model_Shell(Base_Shell):
     asad_type = pyasad.Model
 
+    def do_read(self, arg, format='asad'):
+        try:
+            path = os.path.abspath(parse_args(arg, expected=1)[0])
+            base = self.asad_type(path=path, format=format)
+            self.values.append(base)
+            ok_print("Read OK: {}".format(path))
+            ok_print("Wavelength Step: {}".format(base.wavelength_step))
+        except Exception as err:
+            error_print("Failed to read file")
+            error_print(unicode(err))
+            raise err
+    
     def do_set_age_factor(self, arg):
         age_factor = parse_args(arg, expected=1, type=float)[0]
         for model in self.values:
@@ -500,7 +512,7 @@ class Object_Shell(Base_Shell):
 
     def do_calculate_chosen_model(self, arg):
         try:
-            stat_test = pyasad.Statistics.ks_2_sample_freq_test if arg == 'ks2' else pyasad.Statistics.chi_squared_freq_test
+            stat_test = pyasad.Statistics.ks_2_sample_freq_test if arg == 'ks' else pyasad.Statistics.chi_squared_freq_test
             for obj in self.values:
                 if len(obj.model.wavelength) != len(obj.model.wavelength):
                     raise Exception(
@@ -716,10 +728,14 @@ class Run_Shell(Object_Shell):
 
     @prompt_command
     def model_read(self):
+        self.config['model_format'] = safe_default_input(
+            'Model Format',
+            self.config['model_format'])
         self.config['model_input_directory'] = safe_default_input(
             'Model path',
             self.config['model_input_directory'])
-        self.model.do_read_file_directory(self.config['model_input_directory'])
+        self.model.do_read(self.config['model_input_directory'],
+                           format=self.config['model_format'])
 
     @prompt_command
     def model_interpolation_wavelength_start(self):
@@ -984,7 +1000,6 @@ class Run_Shell(Object_Shell):
             self.observation_output()
 
         self.update_config()
-
         self.model_read()
         if observation_is_smoothed:
             self.model_interpolation_wavelength_start_2()
