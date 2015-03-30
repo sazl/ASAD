@@ -5,13 +5,14 @@ import matplotlib.pyplot as plt
 if __name__ == '__main__':
     model = pyasad.Model(
         path='data/models/bc2003_hr_m52_salp_ssp.ised_ASCII',
-        format='galaxev'
+        format='GALAXEV'
     )
 
     fig = plt.figure(figsize=(10,11))
 
     for i, a in enumerate(model.age):
-        if a >= 7.5 and a <= 8.5:
+        x, y = model.flux[i][0], model.flux[i][-1]
+        if a >= 6.5 and a <= 7.5 and x >= 0.015 and y <= 0.005:
             plt.plot(model.wavelength,
                 model.flux[i],
                 label=str(a),
@@ -23,7 +24,7 @@ if __name__ == '__main__':
     plt.ylabel("Flux")
     plt.legend(loc='upper right', shadow=False, prop={'size':8})
     plt.savefig(
-        'test2.pdf',
+        'test3.pdf',
         format='pdf',
         bbox_inches='tight',
         dpi=1400

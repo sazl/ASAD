@@ -307,8 +307,29 @@ class Model(Base):
     PADOVA_WL_START     = 3322
     PADOVA_WL_END       = 9300
     PADOVA_ROUND_DIGITS = 2
+    PADOVA_AGE_START    = 6.2
     PADOVA_AGE_END      = 10.10
-    MODEL_FORMATS       = ['asad', 'galaxev', 'miles']
+    MODEL_FORMATS       = ['ASAD', 'GALAXEV', 'MILES']
+
+
+    def __init__(self,
+                 age_start=6.6,
+                 age_step=0.05,
+                 path=None,
+                 format=None,
+                 *args, **kwargs):
+        super(Model, self).__init__(path=None, *args, **kwargs)
+        self.age_start = age_start
+        self.age_step = age_step
+        self.read_from_path(path, format=format)
+
+    def read_from_path(self, path, format='asad'):
+        if format == 'ASAD':
+            self.read_del_gato_model(path)
+        elif format == 'GALAXEV':
+            self.read_galaxev_model(path)
+        elif format == 'MILES':
+            self.read_miles_model(path)
 
     def read_del_gato_model(self, path):
         super(Model, self).read_from_path(path)
@@ -361,14 +382,15 @@ class Model(Base):
 
         spectra = reduce(lambda x,y: x+y, spectra)[1:]
         age = map(lambda x: round(math.log10(x), Model.PADOVA_ROUND_DIGITS), spectra)
+        age_start_index = np.searchsorted(age, Model.PADOVA_AGE_START)
         age_end_index = np.searchsorted(age, Model.PADOVA_AGE_END)+1
-        age_start = age[0]
         age_step = age[1] - age[0]
-        self.age = np.array(age[:age_end_index])
-        self.age_start = age_start
+        self.age = np.array(age[age_start_index:age_end_index])
+        print(self.age)
+        self.age_start = age[0]
         self.age_step = age_step
 
-        self.flux = np.array(total_flux[1:age_end_index+1])
+        self.flux = np.array(total_flux[age_start_index:age_end_index])
         result = self.wavelength_set_range(
             Model.PADOVA_WL_START, Model.PADOVA_WL_END)
         self.wavelength = result.wavelength
@@ -382,25 +404,6 @@ class Model(Base):
             self.age = np.fromstring(f.readline().lstrip('#'), dtype=float, sep=' ')
             self.age_start = self.age[0]
             self.age_step = self.age[1] - self.age[0]
-
-    def __init__(self,
-                 age_start=6.6,
-                 age_step=0.05,
-                 path=None,
-                 format=None,
-                 *args, **kwargs):
-        super(Model, self).__init__(path=None, *args, **kwargs)
-        self.age_start = age_start
-        self.age_step = age_step
-        self.read_from_path(path, format=format)
-
-    def read_from_path(self, path, format='asad'):
-        if format == 'asad':
-            self.read_del_gato_model(path)
-        elif format == 'galaxev':
-            self.read_galaxev_model(path)
-        elif format == 'miles':
-            self.read_miles_model(path)
 
     @property
     def age_start(self):
