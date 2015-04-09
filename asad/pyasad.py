@@ -385,7 +385,7 @@ class Model(Base):
         age_start_index = np.searchsorted(age, Model.PADOVA_AGE_START)
         age_end_index = np.searchsorted(age, Model.PADOVA_AGE_END)+1
         age_step = age[1] - age[0]
-        self.age = np.array(age[age_start_index:age_end_index])
+        self.age = np.array(age[age_start_index+1:age_end_index+1])
         print(self.age)
         self.age_start = age[0]
         self.age_step = age_step
