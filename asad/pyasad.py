@@ -380,16 +380,19 @@ class Model(Base):
         self.original_name = basename
         self.wavelength = np.array(wavelength)
 
+        # Skip Age Zero
         spectra = reduce(lambda x,y: x+y, spectra)[1:]
         age = map(lambda x: round(math.log10(x), Model.PADOVA_ROUND_DIGITS), spectra)
         age_start_index = np.searchsorted(age, Model.PADOVA_AGE_START)
         age_end_index = np.searchsorted(age, Model.PADOVA_AGE_END)+1
         age_step = age[1] - age[0]
-        self.age = np.array(age[age_start_index+1:age_end_index+1])
+        self.age = np.array(age[age_start_index:age_end_index])
         print(self.age)
         self.age_start = age[0]
         self.age_step = age_step
 
+        # Skip Age Zero
+        total_flux = total_flux[1:]
         self.flux = np.array(total_flux[age_start_index:age_end_index])
         result = self.wavelength_set_range(
             Model.PADOVA_WL_START, Model.PADOVA_WL_END)
