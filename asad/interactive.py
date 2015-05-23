@@ -525,7 +525,7 @@ class Object_Shell(Base_Shell):
                 obj.calculate_chosen_model()
                 ok_print('Calculated Min Age and Reddening: %s' % obj.name)
         except Exception as err:
-            error_print('Error calculating chosen model')
+            error_print('Error calculating best Reddening/Age match')
             error_print(unicode(err))
             raise err
 
@@ -1002,17 +1002,18 @@ class Run_Shell(Object_Shell):
 
         self.update_config()
         self.model_read()
-        if observation_is_smoothed:
-            self.model_interpolation_wavelength_start_2()
-            self.model_smoothen()
-        else:
-            if parse_input_yn('Smooth the model', default=True):
-                self.model_interpolation_wavelength_start_no_obsv_smoothed()
-                self.model_smoothen_no_obsv_smoothed()
-        self.model_wavelength_range()
-        self.model_normalize_wavelength()
-        if parse_input_yn('Output models'):
-            self.model_output()
+        if self.config['model_format'] != 'INTERMEDIATE':
+            if observation_is_smoothed:
+                self.model_interpolation_wavelength_start_2()
+                self.model_smoothen()
+            else:
+                if parse_input_yn('Smooth the model', default=True):
+                    self.model_interpolation_wavelength_start_no_obsv_smoothed()
+                    self.model_smoothen_no_obsv_smoothed()
+            self.model_wavelength_range()
+            self.model_normalize_wavelength()
+            if parse_input_yn('Output models'):
+                self.model_output()
 
         self.update_config()
 
@@ -1020,7 +1021,7 @@ class Run_Shell(Object_Shell):
         if parse_input_yn('Output Reddening/Ages files'):
             self.object_output()
         self.object_calculate_chosen()
-        if parse_input_yn('Output chosen'):
+        if parse_input_yn('Output best Reddening/Age match'):
             self.object_output_chosen()
         self.plot_output_format()
         if parse_input_yn('Output surface plots'):

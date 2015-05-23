@@ -309,8 +309,7 @@ class Model(Base):
     PADOVA_ROUND_DIGITS = 2
     PADOVA_AGE_START    = 6.2
     PADOVA_AGE_END      = 10.10
-    MODEL_FORMATS       = ['DELGADO', 'GALAXEV', 'MILES']
-
+    MODEL_FORMATS       = ['DELGADO', 'GALAXEV', 'MILES', 'INTERMEDIATE']
 
     def __init__(self,
                  age_start=6.6,
@@ -330,6 +329,8 @@ class Model(Base):
             self.read_galaxev_model(path)
         elif format == 'MILES':
             self.read_miles_model(path)
+        else:
+            self.read_del_gado_model(path)
 
     def read_del_gado_model(self, path):
         super(Model, self).read_from_path(path)
