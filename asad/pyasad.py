@@ -387,7 +387,6 @@ class Model(Base):
         age_end_index = np.searchsorted(age, Model.PADOVA_AGE_END)+1
         age_step = age[1] - age[0]
         self.age = np.array(age[age_start_index:age_end_index])
-        print(self.age)
         self.age_start = age[0]
         self.age_step = age_step
 
@@ -402,7 +401,6 @@ class Model(Base):
 
     def read_miles_model(self, path):
         super(Model, self).read_from_path(path)
-        print('here')
         with open(path) as f:
             self.age = np.fromstring(f.readline().lstrip('#'), dtype=float, sep=' ')
             self.age_start = self.age[0]
