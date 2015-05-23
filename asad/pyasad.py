@@ -566,7 +566,6 @@ class Asad(object):
         result.model = result.model.normalize(wavelength)
         return result
 
-
     def calculate_stat(self):
         self.stat = np.zeros([self.num_observation, self.num_model])
         for i in range(self.num_observation):

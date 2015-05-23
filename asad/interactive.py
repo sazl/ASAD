@@ -883,7 +883,7 @@ class Run_Shell(Object_Shell):
             prefix='normalized_')
 
     def object_generate(self):
-        print('Generating object files...')
+        print('Generating Reddening/Ages files...')
         for model in self.model.values:
             for obsv in self.observation.values:
                 obj = pyasad.Asad.from_observation_model(obsv, model)
@@ -894,7 +894,7 @@ class Run_Shell(Object_Shell):
     @prompt_command
     def object_output(self):
         self.config['object_output_directory'] = safe_default_input(
-            'Object directory',
+            'Reddening/Ages directory',
             self.config['object_output_directory'])
         self.object.do_write(self.config['object_output_directory'])
 
@@ -1017,7 +1017,7 @@ class Run_Shell(Object_Shell):
         self.update_config()
 
         self.object_generate()
-        if parse_input_yn('Output object files'):
+        if parse_input_yn('Output Reddening/Ages files'):
             self.object_output()
         self.object_calculate_chosen()
         if parse_input_yn('Output chosen'):
