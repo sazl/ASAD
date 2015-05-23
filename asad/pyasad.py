@@ -309,7 +309,7 @@ class Model(Base):
     PADOVA_ROUND_DIGITS = 2
     PADOVA_AGE_START    = 6.2
     PADOVA_AGE_END      = 10.10
-    MODEL_FORMATS       = ['ASAD', 'GALAXEV', 'MILES']
+    MODEL_FORMATS       = ['DELGADO', 'GALAXEV', 'MILES']
 
 
     def __init__(self,
@@ -324,14 +324,14 @@ class Model(Base):
         self.read_from_path(path, format=format)
 
     def read_from_path(self, path, format='asad'):
-        if format == 'ASAD':
-            self.read_del_gato_model(path)
+        if format == 'DELGADO':
+            self.read_del_gado_model(path)
         elif format == 'GALAXEV':
             self.read_galaxev_model(path)
         elif format == 'MILES':
             self.read_miles_model(path)
 
-    def read_del_gato_model(self, path):
+    def read_del_gado_model(self, path):
         super(Model, self).read_from_path(path)
         model_indices = np.arange(0, 220, 3)
         self.flux = self.flux[model_indices]
