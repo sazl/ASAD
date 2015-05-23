@@ -439,7 +439,7 @@ class Model_Shell(Base_Shell):
             error_print("Failed to read file")
             error_print(unicode(err))
             raise err
-    
+
     def do_set_age_factor(self, arg):
         age_factor = parse_args(arg, expected=1, type=float)[0]
         for model in self.values:
@@ -678,7 +678,7 @@ class Object_Shell(Base_Shell):
         except Exception as err:
             error_print(unicode(err))
             raise err
-    
+
     @property
     def base(self):
         return self._base
@@ -984,7 +984,7 @@ class Run_Shell(Object_Shell):
         self.observation_read()
         if parse_input_yn('Observation set wavelength start (Angstroms)', default=True):
             self.observation_wavelength_start()
-        if parse_input_yn('Smooth the observation', default=True):
+        if parse_input_yn('Smooth the observation', default=False):
             self.observation_smoothen()
             observation_is_smoothed = True
 
