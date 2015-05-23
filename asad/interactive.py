@@ -562,7 +562,7 @@ class Object_Shell(Base_Shell):
                         config.write(buff)
                         f.write(unicode(buff.getvalue()))
                 ok_print('Wrote %s to %s' % (obj.name, fpath))
-        elif os.path.isfile(path):
+        else:
             with io.open(path, 'w') as f:
                 for obj in self.values:
                     f.write(obj.format_chosen())

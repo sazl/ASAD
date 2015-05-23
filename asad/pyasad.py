@@ -320,9 +320,10 @@ class Model(Base):
         super(Model, self).__init__(path=None, *args, **kwargs)
         self.age_start = age_start
         self.age_step = age_step
-        self.read_from_path(path, format=format)
+        if not path is None:
+            self.read_from_path(path, format=format)
 
-    def read_from_path(self, path, format='asad'):
+    def read_from_path(self, path, format='DELGADO'):
         if format == 'DELGADO':
             self.read_del_gado_model(path)
         elif format == 'GALAXEV':
@@ -330,7 +331,7 @@ class Model(Base):
         elif format == 'MILES':
             self.read_miles_model(path)
         else:
-            self.read_del_gado_model(path)
+            super(Model, self).read_from_path(path)
 
     def read_del_gado_model(self, path):
         super(Model, self).read_from_path(path)
@@ -557,7 +558,7 @@ class Asad(object):
         return unicode(fmt_str)
 
     def format_chosen(self):
-        fmt = '{:<40} {:>10f} {:>10f}\n'.format(
+        fmt = '{:<80} {:>10f} {:>10f}\n'.format(
             self.name, self.min_age, self.min_reddening)
         return unicode(fmt)
 
