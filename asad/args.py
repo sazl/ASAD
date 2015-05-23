@@ -224,10 +224,13 @@ def init_readline_history():
     try:
         import readline
         readline.read_history_file(histfile)
+    except ImportError:
+        print "Module readline not available."
     except IOError:
         print "Cannot find readline history file"
-    import atexit
-    atexit.register(readline.write_history_file, histfile)
+    else:
+	    import atexit
+	    atexit.register(readline.write_history_file, histfile)
 
 def init():
     init_readline()
