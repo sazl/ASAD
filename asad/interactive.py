@@ -551,7 +551,7 @@ class Object_Shell(Base_Shell):
     def do_write_chosen(self, arg, config=None):
 
         def write_chosen(path, values):
-            with io.open(fpath, 'w') as f:
+            with io.open(path, 'w') as f:
                 for obj in values:
                     f.write(obj.format_chosen())
                     ok_print('Wrote %s to %s' % (obj.name, path))
