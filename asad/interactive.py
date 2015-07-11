@@ -551,14 +551,15 @@ class Object_Shell(Base_Shell):
     def do_write_chosen(self, arg, config=None):
 
         def write_chosen(path, values):
-            for obj in values:
-                f.write(obj.format_chosen())
-                ok_print('Wrote %s to %s' % (obj.name, path))
-            if config:
-                buff = StringIO()
-                buff.write(unicode('\n'))
-                config.write(buff)
-                f.write(unicode(buff.getvalue()))
+            with io.open(fpath, 'w') as f:
+                for obj in values:
+                    f.write(obj.format_chosen())
+                    ok_print('Wrote %s to %s' % (obj.name, path))
+                if config:
+                    buff = StringIO()
+                    buff.write(unicode('\n'))
+                    config.write(buff)
+                    f.write(unicode(buff.getvalue()))
 
         path = os.path.abspath(parse_args(arg, expected=1)[0])
         if os.path.isdir(path):
