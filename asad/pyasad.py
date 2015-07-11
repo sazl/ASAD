@@ -510,6 +510,8 @@ class Observation(Base):
 
 class Asad(object):
 
+    ROUND_DIGITS = 2
+
     @staticmethod
     def from_observation_model(observation, model):
         obj = Asad()
@@ -559,7 +561,7 @@ class Asad(object):
 
     def format_chosen(self):
         fmt = '{:<80} {:>10f} {:>10f}\n'.format(
-            self.name, self.min_age, self.min_reddening)
+            self.name, round(self.min_age, ROUND_DIGITS), self.min_reddening)
         return unicode(fmt)
 
     def normalize(self, wavelength):

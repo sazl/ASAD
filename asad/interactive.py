@@ -1017,7 +1017,7 @@ class Run_Shell(Object_Shell):
         if parse_input_yn('Output Reddening/Ages files'):
             self.object_output()
         self.object_calculate_chosen()
-        if parse_input_yn('Output best Reddening/Age match'):
+        if parse_input_yn('Output best Reddening/Age match', default=True):
             self.object_output_chosen()
         self.plot_output_format()
         if parse_input_yn('Output surface plots'):
