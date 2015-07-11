@@ -561,7 +561,9 @@ class Asad(object):
 
     def format_chosen(self):
         fmt = '{:<80} {:>10f} {:>10f}\n'.format(
-            self.name, round(self.min_age, ROUND_DIGITS), self.min_reddening)
+            self.name,
+            round(self.min_age, Asad.ROUND_DIGITS),
+            self.min_reddening)
         return unicode(fmt)
 
     def normalize(self, wavelength):
