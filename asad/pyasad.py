@@ -560,7 +560,7 @@ class Asad(object):
         return unicode(fmt_str)
 
     def format_chosen(self):
-        fmt = '{:<80} {:>10f} {:>10f}\n'.format(
+        fmt = '{:<80} {:>8.2f} {:>10f}\n'.format(
             self.name,
             round(self.min_age, Asad.ROUND_DIGITS),
             self.min_reddening)
