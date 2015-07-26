@@ -405,6 +405,7 @@ class Model(Base):
         super(Model, self).read_from_path(path)
         with open(path) as f:
             self.age = np.fromstring(f.readline().lstrip('#'), dtype=float, sep=' ')
+            self.age = np.round(self.age, Model.PADOVA_ROUND_DIGITS)
             self.age_start = self.age[0]
             self.age_step = self.age[1] - self.age[0]
 
