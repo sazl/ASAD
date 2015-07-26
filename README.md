@@ -1,4 +1,5 @@
-# ASAD (__A__nalyzer of __S__pectra for __A__ge __D__etermination)
+# ASAD
+__A__nalyzer of __S__pectra for __A__ge __D__etermination
 
 ## Requirements
 
