@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 
 import argparse
 import os, os.path
@@ -8,7 +9,11 @@ import sys
 import colorama
 import asad.pyasad as pyasad
 import asad.interactive as interactive
-import asad.wizard as wizard
+
+try:
+    import asad.wizard as wizard
+except:
+    print("\n!! Qt not installed, GUI will not be available !!\n\n")
 
 #===============================================================================
 
@@ -115,7 +120,7 @@ GENERAL_OPTIONS = [
         'default' : [6.6, 10.25],
         'help'    : 'log(Age)'
     }),
-    
+
     (['--age-factor'], {
         'metavar' : 'AgeFactor',
         'type'    : float,
@@ -175,7 +180,7 @@ def process(args):
         wizard.init()
     elif args.script:
         for s in args.script:
-            interactive.Main_Shell().execute(s)    
+            interactive.Main_Shell().execute(s)
 
 #===============================================================================
 
@@ -208,7 +213,7 @@ def init_readline():
     try:
         import readline
     except ImportError:
-        print "Module readline not available."
+        print("Module readline not available.")
     else:
         import rlcompleter
         readline.set_completer(complete)
@@ -225,9 +230,9 @@ def init_readline_history():
         import readline
         readline.read_history_file(histfile)
     except ImportError:
-        print "Module readline not available."
+        print("Module readline not available.")
     except IOError:
-        print "Cannot find readline history file"
+        print("Cannot find readline history file")
     else:
 	    import atexit
 	    atexit.register(readline.write_history_file, histfile)
