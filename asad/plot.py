@@ -10,6 +10,8 @@ import matplotlib.pyplot  as plt
 import matplotlib.markers as markers
 
 options = {
+    'xtick.labelsize'         : 28,
+    'ytick.labelsize'         : 28,
     'xtick.major.size'        : 20,
     'xtick.major.width'       : 1,
     'xtick.minor.size'        : 10,
@@ -23,12 +25,12 @@ options = {
 
 font = {
     'fontname' : 'Sans',
-    'fontsize' : 22
+    'fontsize' : 36
 }
 
 small_font = {
     'fontname' : 'Sans',
-    'fontsize' : 10
+    'fontsize' : 28
 }
 
 
@@ -62,19 +64,19 @@ def surface(obj, levels=15, outdir="",
 
     fig = plt.figure(figsize=(16,10))
     border_width = 0.10
-    border_height = 0.07
-    ax_size = [0+border_width, 0+border_height,
-               1-0.5*border_width, 1-2*border_height]
+    border_height = 0.09
+    ax_size = [0.10, 0.15, 0.90, 0.75]
     ax = fig.add_axes(ax_size)
 
-    C  = plt.contour(x, y, z, NL, colors=['k'], linewidths=0.10)
-    if labels: plt.clabel(C, inline=1, fontsize=10, linewidths=0.10)
-    CF = plt.contourf(x, y, z, NL, alpha=0.85, cmap=cm.jet)
+    C  = plt.contour(x, y, z, NL, colors=['k'], linewidths=0.10, zorder=2)
+    if labels: plt.clabel(C, inline=1, linewidths=0.10, **small_font)
+    CF = plt.contourf(x, y, z, NL, alpha=0.85, cmap=cm.jet, zorder=1)
     CF.cmap.set_under('k')
     CF.cmap.set_over('w')
     cb = fig.colorbar(CF)
-    cb.set_label("Test Statistic")
-    plt.scatter([obj.min_age], [obj.min_reddening], c='w', s=350, marker="*")
+    cb.ax.tick_params(labelsize=26)
+    cb.set_label("Test Statistic", size=32)
+    plt.scatter([obj.min_age], [obj.min_reddening], c='w', s=350, marker="*", zorder=3)
 
     plt.xlim([obj.model.age[0], obj.model.age[-1]])
     plt.ylim([obj.observation.reddening[0], obj.observation.reddening[-1]])
@@ -83,6 +85,7 @@ def surface(obj, levels=15, outdir="",
     plt.xlabel("log(Age/Year)", **font)
     plt.ylabel("E (B-V)", **font)
 
+    plt.tick_params(labelsize=26)
     plt.minorticks_on()
     plt.grid(which='both')
 
@@ -115,7 +118,7 @@ def surface_subplot(obj, levels=15,
 #    ax = fig.add_axes(ax_size)
 
     C  = plt.contour(x, y, z, NL, colors=['k'], linewidths=0.10)
-    if labels: plt.clabel(C, inline=1, fontsize=10, linewidths=0.10)
+    if labels: plt.clabel(C, inline=1, linewidths=0.10, **small_font)
     CF = plt.contourf(x, y, z, NL, alpha=0.85, cmap=cm.jet)
     CF.cmap.set_under('k')
     CF.cmap.set_over('w')
@@ -165,10 +168,11 @@ def scatter(obj, ages=[], reddenings=[], outdir='',
                  label=obsv_label, linewidth=0.5,
                  linestyle=next(obsv_linestyles))
 
-    plt.title('Flux vs Wavelength\n' + title_format(obj))
-    plt.xlabel("Wavelength (Angstroms)")
-    plt.ylabel("Normalized Flux")
-    plt.legend(loc='upper right', shadow=False, prop={'size':8})
+    plt.tick_params(axis='both', which='major', labelsize=16)
+    plt.title('Flux vs Wavelength\n' + title_format(obj), size=20)
+    plt.xlabel("Wavelength (Angstroms)", fontsize=18)
+    plt.ylabel("Normalized Flux", fontsize=18)
+    plt.legend(loc='upper right', shadow=False, prop={'size':14})
 
     file_name = fname or ("best_spectra_match_" + obj.name)
     if save:
@@ -217,7 +221,7 @@ def scatter_subplot(obj, ages=[], reddenings=[],
         plt.plot(obsv.wavelength, obsv.flux[oi],
                  label=obsv_label, linewidth=0.8, linestyle='solid', color='g')
 
-    plt.tick_params(axis='both', which='major', labelsize=10)
+    plt.tick_params(axis='both', which='major', labelsize=20)
     plt.title('[{}]'.format(obsv_name))
     plt.xlabel(u"Wavelength (Angstroms)")
     plt.ylabel("Normalized Flux")
@@ -296,7 +300,7 @@ def surface_error(obj, levels=15, outdir='',
     ax = fig.add_axes(ax_size)
 
     C  = plt.contour(x, y, z, NL, colors=['k'], linewidths=0.10)
-    if labels: plt.clabel(C, inline=1, fontsize=10, linewidths=0.10)
+    if labels: plt.clabel(C, inline=1, linewidths=0.10, **small_font)
     CF = plt.contourf(x, y, z, NL, alpha=0.85, cmap=cm.jet)
     CF.cmap.set_under('k')
     CF.cmap.set_over('w')
