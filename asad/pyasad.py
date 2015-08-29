@@ -124,7 +124,7 @@ class Base(object):
         if path:
             self.read_from_path(path)
 
-    def format(self):
+    def format(self, header=''):
         out = io.StringIO()
         for i in range(self.num_wl):
             out.write(unicode(self.wavelength[i]))
@@ -132,7 +132,8 @@ class Base(object):
                 out.write(unicode(' {:10.6g}'.format(self.flux[j][i])))
             out.write(u'\n')
         out.flush()
-        return out.getvalue()
+        header = '# ' + header
+        return '\n'.join([header, out.getvalue()])
 
     def read_from_path(self, path, *args, **kwargs):
         mat = np.array(np.loadtxt(path).transpose())
@@ -323,6 +324,10 @@ class Model(Base):
         if not path is None:
             self.read_from_path(path, format=format)
 
+    def format(self):
+        ages_str = ', '.join(map(str, self.age))
+        return super(Model, self).format(header=ages_str)
+
     def read_from_path(self, path, format='DELGADO'):
         if format == 'DELGADO':
             self.read_del_gado_model(path)
@@ -330,8 +335,20 @@ class Model(Base):
             self.read_galaxev_model(path)
         elif format == 'MILES':
             self.read_miles_model(path)
+        elif format == 'INTERMEDIATE':
+            self.read_intermediate_model(path)
         else:
             super(Model, self).read_from_path(path)
+
+    def read_intermediate_model(self, path):
+        from StringIO import StringIO
+        with open(path) as f:
+            header = f.readline()
+            age = map(float, header.strip('# ').split(','))
+            self.age = age
+            self.age_start = self.age[0]
+            self.age_step = self.age[1] - self.age[0]
+        super(Model, self).read_from_path(path)
 
     def read_del_gado_model(self, path):
         super(Model, self).read_from_path(path)
@@ -462,18 +479,18 @@ class Observation(Base):
         Z = X + (Y / 3.2)
         return np.array([X, Y, Z])
 
-    def find_flux(self, reddening, step):
+    def find_flux(self, start, end, step):
         flux_initial = self.flux[0]
         Z = self.find_xyz()[2]
-        R = np.arange(0, reddening+step, step)
+        R = np.arange(start, end+step, step)
         flux = np.array([
             (10**(0.4*3.2*Z[i]*R)) * flux_initial[i] for i in range(len(Z))
         ])
         return flux.transpose()
 
-    def reddening_shift(self, reddening, step):
+    def reddening_shift(self, start, end, step):
         result = copy.deepcopy(self)
-        result.flux = self.find_flux(reddening, step)
+        result.flux = self.find_flux(start, end, step)
         return result
 
     def smoothen(self, interp, name='', step=0):
@@ -561,10 +578,12 @@ class Asad(object):
         return unicode(fmt_str)
 
     def format_chosen(self):
-        fmt = '{:<80} {:>8.2f} {:>10f}\n'.format(
+        fmt = '{:<80} {:>8.2f} {:>10f}\nTest Statistic Value = {}\n'.format(
             self.name,
             round(self.min_age, Asad.ROUND_DIGITS),
-            self.min_reddening)
+            self.min_reddening,
+            self.min_stat
+        )
         return unicode(fmt)
 
     def normalize(self, wavelength):

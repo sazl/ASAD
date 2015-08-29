@@ -428,7 +428,7 @@ class Base_Shell(Shell):
 class Model_Shell(Base_Shell):
     asad_type = pyasad.Model
 
-    def do_read(self, arg, format='asad'):
+    def do_read(self, arg, format='DELGADO'):
         try:
             path = os.path.abspath(parse_args(arg, expected=1)[0])
             base = self.asad_type(path=path, format=format)
@@ -469,7 +469,7 @@ class Observation_Shell(Base_Shell):
         try:
             [start, end, step] = parse_args(arg, expected=3, type=float)
             for (i, observation) in enumerate(self.values):
-                self.values[i] = observation.reddening_shift(end, step)
+                self.values[i] = observation.reddening_shift(start, end, step)
                 ok_print('Reddening Corrected: {}'.format(observation.name))
         except ValueError as value_error:
             error_print('Redshift: start end step needed')
@@ -790,6 +790,13 @@ class Run_Shell(Object_Shell):
         self.model.do_write(self.config['model_output_directory'])
 
     @prompt_command
+    def model_output_intermediate(self):
+        self.config['model_output_directory'] = safe_default_input(
+            'Output directory',
+            self.config['model_output_directory'])
+        self.model.do_write(self.config['model_output_directory'])
+
+    @prompt_command
     def observation_read(self):
         self.config['observation_input_directory'] = safe_default_input(
             'Observation path or directory',
@@ -1010,7 +1017,10 @@ class Run_Shell(Object_Shell):
             self.model_wavelength_range()
             self.model_normalize_wavelength()
             if parse_input_yn('Output models'):
-                self.model_output()
+                if self.config['model_format'] == 'INTERMEDIATE':
+                    self.model_intermediate_output()
+                else:
+                    self.model_output()
 
         self.update_config()
 
