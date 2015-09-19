@@ -35,7 +35,8 @@ buildOptions = dict(
     optimize=2,
     create_shared_zip=True,
     compressed = True,
-    include_msvcr=True
+    include_msvcr=True,
+    silent=True
     )
 
 base = 'Console'
