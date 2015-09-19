@@ -78,9 +78,7 @@ def surface(obj, levels=15, outdir="",
     cb.set_label("Test Statistic", size=32)
     plt.scatter([obj.min_age], [obj.min_reddening], c='w', s=350, marker="*", zorder=3)
 
-    print('min max', obj.model.age[0], obj.model.age[-1])
     plt.xlim(xmin=obj.model.age[0], xmax=obj.model.age[-1])
-    print('obsv min max', obj.observation.reddening[0], obj.observation.reddening[-1])
     plt.ylim([obj.observation.reddening[0], obj.observation.reddening[-1]])
 
     plt.title(title_format(obj), **font)
@@ -228,6 +226,51 @@ def scatter_subplot(obj, ages=[], reddenings=[],
     plt.xlabel(u"Wavelength (Angstroms)")
     plt.ylabel("Normalized Flux")
     plt.legend(loc='upper right', shadow=False, prop={'size':7})
+
+def residual_match(obj, outdir='',
+            fname='',
+            format='eps',
+            title='',
+            xlabel='',
+            ylabel='',
+            save=False,
+            show=False,
+            *args, **kwargs):
+    mpl.rcParams = dict(mpl.rcParams, **options)
+    model = obj.model
+    obsv = obj.observation
+    flux = model.flux[obj.min_model] - obsv.flux[obj.min_observation]
+
+    fig = plt.figure(figsize=(8, 6))
+    gs = mpl.gridspec.GridSpec(2, 1, height_ratios=[3, 1])
+    ax1 = plt.subplot(gs[0])
+    ax2 = plt.subplot(gs[1], sharex=ax1)
+    plt.setp(ax1.get_xticklabels(), visible=False)
+    plt.minorticks_on()
+
+    ax1.set_title('Normalized Flux vs Wavelength\n' + title_format(obj))
+    ax1.plot(model.wavelength, model.flux[obj.min_model], label="Model", linewidth=0.6)
+    ax1.plot(obsv.wavelength, obsv.flux[obj.min_observation], label="Observation", linewidth=0.9)
+    ax1.set_ylabel('Normalized Flux', fontsize=18)
+    ax1.legend(loc='lower right', shadow=False, prop={'size':10})
+
+    ax2.axhline(0, color='black', linewidth=1)
+    ax2.set_xlim(obsv.wavelength[0], obsv.wavelength[-1])
+    ax2.plot(obsv.wavelength, flux, label="Residual Flux", linewidth=0.7)
+    ax2.set_xlabel("Wavelength (Angstroms)", fontsize=18)
+    ax2.legend(loc='best', shadow=False, prop={'size':10})
+
+    plt.tight_layout()
+    file_name = fname or ("residual_match_" + obj.name)
+    if save:
+        plt.savefig(
+            os.path.abspath(os.path.join(outdir, file_name)) + "." + format,
+            format=format
+        )
+
+    if show:
+        plt.show()
+    plt.close()
 
 def residual(obj, outdir='',
             fname='',

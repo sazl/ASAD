@@ -468,10 +468,8 @@ class Observation_Shell(Base_Shell):
     def do_redshift(self, arg):
         try:
             [start, end, step] = parse_args(arg, expected=3, type=float)
-            print('start end step', start, end, step)
             for (i, observation) in enumerate(self.values):
                 self.values[i] = observation.reddening_shift(start, end, step)
-                print(observation.name, observation.reddening)
                 ok_print('Reddening Corrected: {}'.format(observation.name))
         except ValueError as value_error:
             error_print('Redshift: start end step needed')
@@ -582,7 +580,6 @@ class Object_Shell(Base_Shell):
             if not os.path.isdir(path):
                 raise RuntimeError('Must be a directory')
             for obj in self.values:
-                print(obj.observation.reddening)
                 plot.surface(obj, outdir=path, save=True, format=format)
                 ok_print('Plotted surface %s to %s' % (obj.name, path))
         except Exception as err:
@@ -598,6 +595,18 @@ class Object_Shell(Base_Shell):
                 plot.scatter(obj, ages=ages, reddenings=reddenings,
                              outdir=path, save=True, format=format)
                 ok_print('Plotted scatter %s to %s' % (obj.name, path))
+        except Exception as err:
+            error_print(unicode(err))
+            raise err
+
+    def do_plot_residual_match(self, arg, format=''):
+        try:
+            path = os.path.abspath(parse_args(arg, expected=1)[0])
+            if not os.path.isdir(path):
+                raise RuntimeError('Must be a directory')
+            for obj in self.values:
+                plot.residual_match(obj, outdir=path, save=True, format=format)
+                ok_print('Plotted residual match %s to %s' % (obj.name, path))
         except Exception as err:
             error_print(unicode(err))
             raise err
@@ -834,7 +843,6 @@ class Run_Shell(Object_Shell):
         self.config['observation_reddening'] = safe_default_input(
             'Reddening',
             self.config['observation_reddening'])
-        print('---redshifting---')
         self.observation.do_redshift(' '.join([
             self.config['observation_reddening_start'],
             self.config['observation_reddening'],
@@ -968,6 +976,15 @@ class Run_Shell(Object_Shell):
                                      format=self.config['plot_output_format'])
 
     @prompt_command
+    def plot_residual_match_output(self):
+        self.config['plot_residual_match_directory'] = safe_default_input(
+            'Output directory',
+            self.config['plot_residual_match_directory'])
+        self.object.do_plot_residual_match(
+            self.config['plot_residual_match_directory'],
+            format=self.config['plot_output_format'])
+
+    @prompt_command
     def plot_surface_error_output(self):
         self.config['plot_surface_error_directory'] = safe_default_input(
             'Output directory',
@@ -1001,7 +1018,6 @@ class Run_Shell(Object_Shell):
         if parse_input_yn('Output smoothed observations'):
             self.observation_smoothen_output()
         if parse_input_yn('Observation reddening correction', default=True):
-            print('---correcting---')
             self.observation_reddening()
 
         if parse_input_yn('Observation normalize wavelength', default=True):
@@ -1042,6 +1058,8 @@ class Run_Shell(Object_Shell):
             self.plot_scatter_output()
         if parse_input_yn('Output residual plots'):
             self.plot_residual_output()
+        if parse_input_yn('Output residual match plots'):
+            self.plot_residual_match_output()
         if parse_input_yn('Output surface tile plot'):
             self.plot_surface_tile_output()
         self.update_config()
