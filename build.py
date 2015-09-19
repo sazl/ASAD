@@ -9,6 +9,7 @@ except:
     print('\n\nError generating executable\n\n')
 
 CONFIG_FILE = os.path.abspath('default.conf')
+BASE_DIR = os.path.abspath('')
 DATA_DIR = os.path.abspath('data')
 DIST_DIR = os.path.abspath('dist')
 MAC_DIR = os.path.join(DIST_DIR, 'mac')
@@ -39,5 +40,9 @@ if __name__ == '__main__':
         os.path.join(BUILD_DIR, os.listdir(BUILD_DIR)[0]))
     shutil.copytree(build_output, EXEC_DIST_DIR)
     shutil.copy(CONFIG_FILE, EXEC_DIST_DIR)
+    
+    print('Zipping Executable\n\n')
+    shutil.make_archive(os.path.join(BASE_DIR, 'executable'), 'zip', EXEC_DIR)
+    print('Done zipping file: executable.zip\n\n')
 
-    print('\n\n!! Done building executable !!')
+    print('!! Done building executable !!')
