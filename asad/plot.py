@@ -78,7 +78,9 @@ def surface(obj, levels=15, outdir="",
     cb.set_label("Test Statistic", size=32)
     plt.scatter([obj.min_age], [obj.min_reddening], c='w', s=350, marker="*", zorder=3)
 
-    plt.xlim([obj.model.age[0], obj.model.age[-1]])
+    print('min max', obj.model.age[0], obj.model.age[-1])
+    plt.xlim(xmin=obj.model.age[0], xmax=obj.model.age[-1])
+    print('obsv min max', obj.observation.reddening[0], obj.observation.reddening[-1])
     plt.ylim([obj.observation.reddening[0], obj.observation.reddening[-1]])
 
     plt.title(title_format(obj), **font)

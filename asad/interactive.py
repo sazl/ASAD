@@ -468,8 +468,10 @@ class Observation_Shell(Base_Shell):
     def do_redshift(self, arg):
         try:
             [start, end, step] = parse_args(arg, expected=3, type=float)
+            print('start end step', start, end, step)
             for (i, observation) in enumerate(self.values):
                 self.values[i] = observation.reddening_shift(start, end, step)
+                print(observation.name, observation.reddening)
                 ok_print('Reddening Corrected: {}'.format(observation.name))
         except ValueError as value_error:
             error_print('Redshift: start end step needed')
@@ -580,6 +582,7 @@ class Object_Shell(Base_Shell):
             if not os.path.isdir(path):
                 raise RuntimeError('Must be a directory')
             for obj in self.values:
+                print(obj.observation.reddening)
                 plot.surface(obj, outdir=path, save=True, format=format)
                 ok_print('Plotted surface %s to %s' % (obj.name, path))
         except Exception as err:
@@ -831,6 +834,7 @@ class Run_Shell(Object_Shell):
         self.config['observation_reddening'] = safe_default_input(
             'Reddening',
             self.config['observation_reddening'])
+        print('---redshifting---')
         self.observation.do_redshift(' '.join([
             self.config['observation_reddening_start'],
             self.config['observation_reddening'],
@@ -997,6 +1001,7 @@ class Run_Shell(Object_Shell):
         if parse_input_yn('Output smoothed observations'):
             self.observation_smoothen_output()
         if parse_input_yn('Observation reddening correction', default=True):
+            print('---correcting---')
             self.observation_reddening()
 
         if parse_input_yn('Observation normalize wavelength', default=True):

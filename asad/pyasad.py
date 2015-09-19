@@ -489,8 +489,13 @@ class Observation(Base):
         return flux.transpose()
 
     def reddening_shift(self, start, end, step):
+        print('before', self.reddening)
         result = copy.deepcopy(self)
+        result.reddening_start = start
+        result.reddening_step = step
+        print('copy', self.reddening)
         result.flux = self.find_flux(start, end, step)
+        print('after', result.reddening)
         return result
 
     def smoothen(self, interp, name='', step=0):
