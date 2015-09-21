@@ -256,7 +256,7 @@ def residual_match(obj, outdir='',
 
     ax2.axhline(0, color='black', linewidth=1)
     ax2.set_xlim(obsv.wavelength[0], obsv.wavelength[-1])
-    ax2.plot(obsv.wavelength, flux, label="Residual Flux", linewidth=0.7)
+    ax2.plot(obsv.wavelength, flux, color='r', label="Residual Flux", linewidth=0.7)
     ax2.set_xlabel("Wavelength (Angstroms)", fontsize=18)
     ax2.legend(loc='best', shadow=False, prop={'size':10})
 
