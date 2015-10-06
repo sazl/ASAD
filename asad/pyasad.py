@@ -354,6 +354,8 @@ class Model(Base):
         super(Model, self).read_from_path(path)
         model_indices = np.arange(0, 220, 3)
         self.flux = self.flux[model_indices]
+        self.age = np.arange(self.age_start,
+            self.age_start + self.age_step*self.num)
 
     def read_galaxev_model(self, path):
         f = open(path, 'r')
@@ -421,11 +423,19 @@ class Model(Base):
     def read_miles_model(self, path):
         super(Model, self).read_from_path(path)
         with open(path) as f:
-            self.age = np.fromstring(f.readline().lstrip('#'), dtype=float, sep=' ')
-            self.age = np.round(self.age, Model.PADOVA_ROUND_DIGITS)
+            try:
+                header = f.readline().lstrip('#')
+                self.age = np.array([float(x) for x in line.split(',')])
+                self.age = np.round(self.age, Model.PADOVA_ROUND_DIGITS)
+            except:
+                self.age = np.linspace(
+                    Model.PADOVA_AGE_START,
+                    Model.PADOVA_AGE_END,
+                    num=self.num
+                )
             self.age_start = self.age[0]
-            self.age_step = self.age[1] - self.age[0]
-
+            if len(self.age) > 1:
+                self.age_step = self.age[1] - self.age[0]
     @property
     def age_start(self):
         return self.var_start
