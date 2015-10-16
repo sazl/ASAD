@@ -406,7 +406,8 @@ class Model(Base):
         age = map(lambda x: round(math.log10(x), Model.PADOVA_ROUND_DIGITS), spectra)
         age_start_index = np.searchsorted(age, Model.PADOVA_AGE_START)
         age_end_index = np.searchsorted(age, Model.PADOVA_AGE_END)+1
-        age_step = age[1] - age[0]
+        if len(age) > 1:
+            age_step = age[1] - age[0]
         self.age = np.array(age[age_start_index:age_end_index])
         self.age_start = age[0]
         self.age_step = age_step
@@ -436,6 +437,7 @@ class Model(Base):
             self.age_start = self.age[0]
             if len(self.age) > 1:
                 self.age_step = self.age[1] - self.age[0]
+
     @property
     def age_start(self):
         return self.var_start
