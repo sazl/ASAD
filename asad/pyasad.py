@@ -343,11 +343,14 @@ class Model(Base):
     def read_intermediate_model(self, path):
         from StringIO import StringIO
         with open(path) as f:
-            header = f.readline()
-            age = map(float, header.strip('# ').split(','))
-            self.age = age
-            self.age_start = self.age[0]
-            self.age_step = self.age[1] - self.age[0]
+            try:
+              header = f.readline()
+              age = map(float, header.strip('# ').split(','))
+              self.age = age
+              self.age_start = self.age[0]
+              self.age_step = self.age[1] - self.age[0]
+            except:
+              raise ValueError('Model has no age header specified')
         super(Model, self).read_from_path(path)
 
     def read_del_gado_model(self, path):
