@@ -1027,21 +1027,21 @@ class Run_Shell(Object_Shell):
 
         self.update_config()
         self.model_read()
-        if self.config['model_format'] != 'INTERMEDIATE':
-            if observation_is_smoothed:
-                self.model_interpolation_wavelength_start_2()
-                self.model_smoothen()
+
+        if observation_is_smoothed:
+            self.model_interpolation_wavelength_start_2()
+            self.model_smoothen()
+        else:
+            if parse_input_yn('Smooth the model', default=True):
+                self.model_interpolation_wavelength_start_no_obsv_smoothed()
+                self.model_smoothen_no_obsv_smoothed()
+        self.model_wavelength_range()
+        self.model_normalize_wavelength()
+        if parse_input_yn('Output models'):
+            if self.config['model_format'] == 'INTERMEDIATE':
+                self.model_intermediate_output()
             else:
-                if parse_input_yn('Smooth the model', default=True):
-                    self.model_interpolation_wavelength_start_no_obsv_smoothed()
-                    self.model_smoothen_no_obsv_smoothed()
-            self.model_wavelength_range()
-            self.model_normalize_wavelength()
-            if parse_input_yn('Output models'):
-                if self.config['model_format'] == 'INTERMEDIATE':
-                    self.model_intermediate_output()
-                else:
-                    self.model_output()
+                self.model_output()
 
         self.update_config()
 
