@@ -1038,10 +1038,7 @@ class Run_Shell(Object_Shell):
         self.model_wavelength_range()
         self.model_normalize_wavelength()
         if parse_input_yn('Output models'):
-            if self.config['model_format'] == 'INTERMEDIATE':
-                self.model_intermediate_output()
-            else:
-                self.model_output()
+            self.model_output()
 
         self.update_config()
 
