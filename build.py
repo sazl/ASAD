@@ -30,8 +30,6 @@ if __name__ == '__main__':
 
     print('Platform path:', platform_path)
 
-    if os.path.isdir(BUILD_DIR):
-      shutil.rmtree(BUILD_DIR)
     if os.path.isdir(EXEC_DIR):
       shutil.rmtree(EXEC_DIR)
     shutil.copytree(platform_path, EXEC_DIR)
@@ -45,6 +43,8 @@ if __name__ == '__main__':
         os.path.join(BUILD_DIR, os.listdir(BUILD_DIR)[0]))
     shutil.copytree(build_output, EXEC_DIST_DIR)
     shutil.copy(CONFIG_FILE, EXEC_DIST_DIR)
+    if os.path.isdir(BUILD_DIR):
+      shutil.rmtree(BUILD_DIR)
     
     print('Zipping Executable\n\n')
     shutil.make_archive(os.path.join(BASE_DIR, 'executable'), 'zip', EXEC_DIR)
