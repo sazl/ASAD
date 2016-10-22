@@ -1,6 +1,7 @@
 import sys
 import os.path
 import shutil
+import glob
 
 try:
     sys.argv.append('build')
@@ -39,7 +40,7 @@ if __name__ == '__main__':
     shutil.copy(CONFIG_FILE, EXEC_DIR)
 
     build_output = os.path.abspath(
-        os.path.join(BUILD_DIR, os.listdir(BUILD_DIR)[0]))
+      glob.glob(os.path.join(BUILD_DIR, 'exe*'))[0])
     shutil.copytree(build_output, EXEC_DIST_DIR)
     shutil.copy(CONFIG_FILE, EXEC_DIST_DIR)
     if os.path.isdir(BUILD_DIR):
