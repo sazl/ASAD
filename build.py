@@ -30,8 +30,10 @@ if __name__ == '__main__':
 
     print('Platform path:', platform_path)
 
-    shutil.rmtree(BUILD_DIR)
-    shutil.rmtree(EXEC_DIR)
+    if os.path.isdir(BUILD_DIR):
+      shutil.rmtree(BUILD_DIR)
+    if os.path.isdir(EXEC_DIR):
+      shutil.rmtree(EXEC_DIR)
     shutil.copytree(platform_path, EXEC_DIR)
     os.mkdir(EXEC_DATA_DIR)
     for directory in ['models', 'objects', 'observations', 'plots']:
