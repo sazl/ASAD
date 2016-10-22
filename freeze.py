@@ -26,7 +26,8 @@ buildOptions = dict(
         "sphinx",
         "tornado",
         "win32com",
-        "xml"
+        "xml",
+        "collections.sys",
     ],
     bin_path_excludes=[
         "/Library/Frameworks/Tcl.framework",

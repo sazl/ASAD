@@ -57,6 +57,8 @@ def surface(obj, levels=15, outdir="",
             show=False,
             title=None,
             *args, **kwargs):
+    
+
     mpl.rcParams = dict(mpl.rcParams, **options)
     NL = levels
     x  = obj.model.age
