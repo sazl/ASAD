@@ -440,15 +440,18 @@ class Model_Shell(Base_Shell):
             error_print(unicode(err))
             raise err
 
-    def do_set_age_factor(self, arg):
-        age_factor = parse_args(arg, expected=1, type=float)[0]
-        for model in self.values:
-            model.age_factor = age_factor
-
     def do_set_age_start(self, arg):
         age_start = parse_args(arg, expected=1, type=float)[0]
         for model in self.values:
             model.age_start = age_start
+            model.age = None
+
+    def do_set_age_step(self, arg):
+        age_step = parse_args(arg, expected=1, type=float)[0]
+        for model in self.values:
+            model.age_step = age_step
+            model.age = None
+            print(model.age)
 
 #===============================================================================
 
@@ -574,50 +577,50 @@ class Object_Shell(Base_Shell):
     def do_plot(self, arg):
         pass
 
-    def do_plot_surface(self, arg, format=''):
+    def do_plot_surface(self, arg, format='', title=None):
         try:
             path = os.path.abspath(parse_args(arg, expected=1)[0])
             if not os.path.isdir(path):
                 raise RuntimeError('Must be a directory')
             for obj in self.values:
-                plot.surface(obj, outdir=path, save=True, format=format)
+                plot.surface(obj, outdir=path, save=True, format=format, title=title)
                 ok_print('Plotted surface %s to %s' % (obj.name, path))
         except Exception as err:
             error_print(unicode(err))
             raise err
 
-    def do_plot_scatter(self, arg, ages=[], reddenings=[], format=''):
+    def do_plot_scatter(self, arg, ages=[], reddenings=[], format='', title=None):
         try:
             path = os.path.abspath(parse_args(arg, expected=1)[0])
             if not os.path.isdir(path):
                 raise RuntimeError('Must be a directory')
             for obj in self.values:
                 plot.scatter(obj, ages=ages, reddenings=reddenings,
-                             outdir=path, save=True, format=format)
+                             outdir=path, save=True, format=format, title=title)
                 ok_print('Plotted scatter %s to %s' % (obj.name, path))
         except Exception as err:
             error_print(unicode(err))
             raise err
 
-    def do_plot_residual_match(self, arg, format=''):
+    def do_plot_residual_match(self, arg, format='', title=None):
         try:
             path = os.path.abspath(parse_args(arg, expected=1)[0])
             if not os.path.isdir(path):
                 raise RuntimeError('Must be a directory')
             for obj in self.values:
-                plot.residual_match(obj, outdir=path, save=True, format=format)
+                plot.residual_match(obj, outdir=path, save=True, format=format, title=title)
                 ok_print('Plotted residual match %s to %s' % (obj.name, path))
         except Exception as err:
             error_print(unicode(err))
             raise err
 
-    def do_plot_residual(self, arg, format=''):
+    def do_plot_residual(self, arg, format='', title=None):
         try:
             path = os.path.abspath(parse_args(arg, expected=1)[0])
             if not os.path.isdir(path):
                 raise RuntimeError('Must be a directory')
             for obj in self.values:
-                plot.residual(obj, outdir=path, save=True, format=format)
+                plot.residual(obj, outdir=path, save=True, format=format, title=title)
                 ok_print('Plotted residual %s to %s' % (obj.name, path))
         except Exception as err:
             error_print(unicode(err))
@@ -737,15 +740,40 @@ class Run_Shell(Object_Shell):
 
     @prompt_command
     def model_read(self):
-        self.config['model_format'] = safe_default_input(
+        model_format = safe_default_input(
             'Model Format (' + ', '.join(pyasad.Model.MODEL_FORMATS) + ')',
-            self.config['model_format'])
+            self.config['model_format']
+        )
+        while model_format not in pyasad.Model.MODEL_FORMATS:
+            error_print('Please enter a valid model format')
+            model_format = safe_default_input(
+                'Model Format (' + ', '.join(pyasad.Model.MODEL_FORMATS) + ')',
+                self.config['model_format']
+            )
+
+        self.config['model_format'] = model_format
         ok_print("Model format set to {}".format(self.config['model_format']))
         self.config['model_input_directory'] = safe_default_input(
             'Model path',
-            self.config['model_input_directory'])
-        self.model.do_read(self.config['model_input_directory'],
-                           format=self.config['model_format'])
+            self.config['model_input_directory']
+        )
+        self.model.do_read(
+            self.config['model_input_directory'],
+            format=self.config['model_format']
+        )
+
+    @prompt_command
+    def model_age_start_and_step(self):
+        self.config['model_age_start'] = safe_default_input(
+            'Model Age Start',
+            self.config['model_age_start']
+        )
+        self.config['model_age_step'] = safe_default_input(
+            'Model Age Step',
+            self.config['model_age_step']
+        )
+        self.model.do_set_age_start(self.config['model_age_start'])
+        self.model.do_set_age_step(self.config['model_age_step'])
 
     @prompt_command
     def model_interpolation_wavelength_start(self):
@@ -915,9 +943,18 @@ class Run_Shell(Object_Shell):
         self.object.do_write(self.config['object_output_directory'])
 
     def object_calculate_chosen(self):
-        self.config['object_test_statistic'] = safe_default_input(
+        stat_test = safe_default_input(
             'Statistic (' + ', '.join(pyasad.Statistics.STAT_TEST_NAMES) + ')',
-            self.config['object_test_statistic'])
+            self.config['object_test_statistic']
+        )
+        while stat_test not in pyasad.Statistics.STAT_TEST_NAMES:
+            error_print("Invalid statistic chosen, please choose a valid statistic from the list below")
+            stat_test = safe_default_input(
+                 'Statistic (' + ', '.join(pyasad.Statistics.STAT_TEST_NAMES) + ')',
+                 self.config['object_test_statistic']
+            )
+
+        self.config['object_test_statistic'] = stat_test
         print('Calculating best match of age and reddening ({})...'.format(
             self.config['object_test_statistic']))
         self.object.do_calculate_chosen_model(self.config['object_test_statistic'])
@@ -937,12 +974,23 @@ class Run_Shell(Object_Shell):
             self.config['plot_output_format'])
 
     @prompt_command
+    def plot_model_title(self):
+        self.config['plot_model_title'] = safe_default_input(
+            'Custom model title',
+            self.config['plot_model_title'])
+
+    @prompt_command
     def plot_surface_output(self):
         self.config['plot_surface_directory'] = safe_default_input(
             'Output directory',
             self.config['plot_surface_directory'])
+        
+        title = None
+        if parse_input_yn('Custom plot title'):
+            title = safe_default_input('Plot title', None)
+        
         self.object.do_plot_surface(self.config['plot_surface_directory'],
-                                    format=self.config['plot_output_format'])
+                                    format=self.config['plot_output_format'], title=title)
 
     @prompt_command
     def plot_scatter_output(self):
@@ -953,36 +1001,56 @@ class Run_Shell(Object_Shell):
         if parse_input_yn('Custom age and reddening pairs?'):
             ages = [float(a) for a in safe_input('Ages: ').split(' ')]
             reddenings = [float(r) for r in safe_input('Reddenings: ').split(' ')]
+            
+        title = None
+        if parse_input_yn('Custom plot title'):
+            title = safe_default_input('Plot title', None)
+        
         self.object.do_plot_scatter(self.config['plot_scatter_directory'],
                                     ages=ages, reddenings=reddenings,
-                                    format=self.config['plot_output_format'])
+                                    format=self.config['plot_output_format'], title=title)
 
     @prompt_command
     def plot_scatter_output_aux(self):
         self.config['plot_scatter_directory'] = safe_default_input(
             'Output directory',
             self.config['plot_scatter_directory'])
+        
+        title = None
+        if parse_input_yn('Custom plot title'):
+            title = safe_default_input('Plot title', None)
+        
         reddenings, ages = [], []
         self.object.do_plot_scatter(self.config['plot_scatter_directory'],
                                     ages=ages, reddenings=reddenings,
-                                    format=self.config['plot_output_format'])
+                                    format=self.config['plot_output_format'], title=title)
 
     @prompt_command
     def plot_residual_output(self):
         self.config['plot_residual_directory'] = safe_default_input(
             'Output directory',
             self.config['plot_residual_directory'])
+            
+        title = None
+        if parse_input_yn('Custom plot title'):
+            title = safe_default_input('Plot title', None)
+        
         self.object.do_plot_residual(self.config['plot_residual_directory'],
-                                     format=self.config['plot_output_format'])
+                                     format=self.config['plot_output_format'], title=title)
 
     @prompt_command
     def plot_residual_match_output(self):
         self.config['plot_residual_match_directory'] = safe_default_input(
             'Output directory',
             self.config['plot_residual_match_directory'])
+        
+        title = None
+        if parse_input_yn('Custom plot title'):
+            title = safe_default_input('Plot title', None)
+        
         self.object.do_plot_residual_match(
             self.config['plot_residual_match_directory'],
-            format=self.config['plot_output_format'])
+            format=self.config['plot_output_format'], title=title)
 
     @prompt_command
     def plot_surface_error_output(self):
@@ -1027,6 +1095,8 @@ class Run_Shell(Object_Shell):
 
         self.update_config()
         self.model_read()
+        if parse_input_yn('Model set age start and age step'):
+            self.model_age_start_and_step()
 
         if observation_is_smoothed:
             self.model_interpolation_wavelength_start_2()
@@ -1048,16 +1118,18 @@ class Run_Shell(Object_Shell):
         self.object_calculate_chosen()
         if parse_input_yn('Output best Reddening/Age match', default=True):
             self.object_output_chosen()
+
         self.plot_output_format()
-        if parse_input_yn('Output surface plots'):
+        
+        if parse_input_yn('Output surface plots', default=True):
             self.plot_surface_output()
-        if parse_input_yn('Output best spectra match plots'):
+        if parse_input_yn('Output best spectra match plots', default=True):
             self.plot_scatter_output()
-        if parse_input_yn('Output residual plots'):
-            self.plot_residual_output()
-        if parse_input_yn('Output residual match plots'):
+        if parse_input_yn('Output residual plots', default=True):
             self.plot_residual_match_output()
-        if parse_input_yn('Output surface tile plot'):
+        if parse_input_yn('Output detailed residual plots', default=True):
+            self.plot_residual_output()
+        if parse_input_yn('Output surface tile plot', default=True):
             self.plot_surface_tile_output()
         self.update_config()
 

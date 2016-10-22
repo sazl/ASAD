@@ -55,6 +55,7 @@ def surface(obj, levels=15, outdir="",
             labels=False,
             save=False,
             show=False,
+            title=None,
             *args, **kwargs):
     mpl.rcParams = dict(mpl.rcParams, **options)
     NL = levels
@@ -81,7 +82,11 @@ def surface(obj, levels=15, outdir="",
     plt.xlim(xmin=obj.model.age[0], xmax=obj.model.age[-1])
     plt.ylim([obj.observation.reddening[0], obj.observation.reddening[-1]])
 
-    plt.title(title_format(obj), **font)
+    if title:
+      plt.title(title, **font)
+    else:
+      plt.title(title_format(obj), **font)
+    
     plt.xlabel("log(Age/Year)", **font)
     plt.ylabel("E (B-V)", **font)
 
@@ -103,6 +108,7 @@ def surface(obj, levels=15, outdir="",
 
 def surface_subplot(obj, levels=15,
             labels=False,
+            title=None,
             *args, **kwargs):
 #    mpl.rcParams = dict(mpl.rcParams, **options)
     NL = levels
@@ -127,7 +133,12 @@ def surface_subplot(obj, levels=15,
     plt.scatter([obj.min_age], [obj.min_reddening], c='w', s=350, marker="*")
     plt.xlim([obj.model.age[0], obj.model.age[-1]])
     plt.ylim([obj.observation.reddening[0], obj.observation.reddening[-1]])
-    plt.title(title_format(obj), **small_font)
+
+    if title:
+        plt.title(title, **small_font)
+    else:
+        plt.title(title_format(obj), **small_font)
+
     plt.xlabel("log(Age/Year)", **small_font)
     plt.ylabel("E (B-V)", **small_font)
     plt.minorticks_on()
@@ -136,7 +147,7 @@ def surface_subplot(obj, levels=15,
 def scatter(obj, ages=[], reddenings=[], outdir='',
             fname='',
             format='eps',
-            title='',
+            title=None,
             xlabel='',
             ylabel='',
             save=False,
@@ -169,7 +180,12 @@ def scatter(obj, ages=[], reddenings=[], outdir='',
                  linestyle=next(obsv_linestyles))
 
     plt.tick_params(axis='both', which='major', labelsize=16)
-    plt.title('Flux vs Wavelength\n' + title_format(obj), size=20)
+    
+    if title:
+        plt.title(title, size=20)
+    else:
+        plt.title('Flux vs Wavelength\n' + title_format(obj), size=20)    
+    
     plt.xlabel("Wavelength (Angstroms)", fontsize=18)
     plt.ylabel("Normalized Flux", fontsize=18)
     plt.legend(loc='upper right', shadow=False, prop={'size':14})
@@ -191,7 +207,7 @@ def scatter_subplot(obj, ages=[], reddenings=[],
             outdir='',
             fname='',
             format='eps',
-            title='',
+            title=None,
             xlabel='',
             ylabel='',
             *args, **kwargs):
@@ -222,7 +238,12 @@ def scatter_subplot(obj, ages=[], reddenings=[],
                  label=obsv_label, linewidth=0.8, linestyle='solid', color='g')
 
     plt.tick_params(axis='both', which='major', labelsize=20)
-    plt.title('[{}]'.format(obsv_name))
+
+    if title:
+        plt.title(title)
+    else:
+        plt.title('[{}]'.format(obsv_name))
+
     plt.xlabel(u"Wavelength (Angstroms)")
     plt.ylabel("Normalized Flux")
     plt.legend(loc='upper right', shadow=False, prop={'size':7})
@@ -230,7 +251,7 @@ def scatter_subplot(obj, ages=[], reddenings=[],
 def residual_match(obj, outdir='',
             fname='',
             format='eps',
-            title='',
+            title=None,
             xlabel='',
             ylabel='',
             save=False,
@@ -248,7 +269,11 @@ def residual_match(obj, outdir='',
     plt.setp(ax1.get_xticklabels(), visible=False)
     plt.minorticks_on()
 
-    ax1.set_title('Normalized Flux vs Wavelength\n' + title_format(obj))
+    if title:
+        ax1.set_title(title)
+    else:
+        ax1.set_title('Normalized Flux vs Wavelength\n' + title_format(obj))
+
     ax1.plot(model.wavelength, model.flux[obj.min_model], label="Model", linewidth=0.6)
     ax1.plot(obsv.wavelength, obsv.flux[obj.min_observation], label="Observation", linewidth=0.9)
     ax1.set_ylabel('Normalized Flux', fontsize=18)
@@ -275,7 +300,7 @@ def residual_match(obj, outdir='',
 def residual(obj, outdir='',
             fname='',
             format='eps',
-            title='',
+            title=None,
             xlabel='',
             ylabel='',
             save=False,
@@ -288,7 +313,11 @@ def residual(obj, outdir='',
 
     ax1.plot(model.wavelength, model.flux[obj.min_model],
              label="Model Flux", linewidth=0.5)
-    ax1.set_title('Normalized Flux vs Wavelength\n' + title_format(obj))
+    
+    if title:
+        ax1.set_title(title)
+    else:
+        ax1.set_title('Normalized Flux vs Wavelength\n' + title_format(obj))
     ax1.tick_params(which='major', labelsize=8)
     ax1.legend(loc='upper right', shadow=False, prop={'size':7})
 
