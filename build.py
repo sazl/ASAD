@@ -38,7 +38,6 @@ if __name__ == '__main__':
         os.mkdir(os.path.join(EXEC_DATA_DIR, directory))
     shutil.copy(CONFIG_FILE, EXEC_DIR)
 
-    os.mkdir(BUILD_DIR)
     build_output = os.path.abspath(
         os.path.join(BUILD_DIR, os.listdir(BUILD_DIR)[0]))
     shutil.copytree(build_output, EXEC_DIST_DIR)
