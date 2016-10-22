@@ -12,7 +12,6 @@ buildOptions = dict(
         "email",
         "compiler",
         "lib2to3",
-        "json",
         "markupsafe",
         "zmq",
         "scipy",
@@ -28,6 +27,7 @@ buildOptions = dict(
         "win32com",
         "xml",
         "collections.sys",
+	"collections._weakref",
     ],
     bin_path_excludes=[
         "/Library/Frameworks/Tcl.framework",
