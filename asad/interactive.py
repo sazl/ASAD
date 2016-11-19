@@ -1085,7 +1085,7 @@ class Run_Shell(Object_Shell):
             self.observation_wavelength_end()
         if parse_input_yn('Output smoothed observations'):
             self.observation_smoothen_output()
-        if parse_input_yn('Observation reddening correction', default=True):
+        if parse_input_yn('Observation reddening correction', default=False): #Reddening Correction Default set to No.
             self.observation_reddening()
 
         if parse_input_yn('Observation normalize wavelength', default=True):
@@ -1102,7 +1102,7 @@ class Run_Shell(Object_Shell):
             self.model_interpolation_wavelength_start_2()
             self.model_smoothen()
         else:
-            if parse_input_yn('Smooth the model', default=True):
+            if parse_input_yn('Smooth the model', default=False):   #Smooth the model Default set to No.
                 self.model_interpolation_wavelength_start_no_obsv_smoothed()
                 self.model_smoothen_no_obsv_smoothed()
         self.model_wavelength_range()
