@@ -430,7 +430,9 @@ class Model(Base):
             try:
                 header = f.readline().lstrip('#')
                 self.age = np.array([float(x) for x in line.split(',')])
-                self.age = np.round(self.age, Model.PADOVA_ROUND_DIGITS)
+
+                # Not sure why we rounded here before
+                # self.age = np.round(self.age, Model.PADOVA_ROUND_DIGITS)
             except:
                 self.age = np.linspace(
                     Model.PADOVA_AGE_START,
@@ -597,7 +599,9 @@ class Asad(object):
     def format_chosen(self):
         fmt = '{:<80} {:>8.2f} {:>10f}\nTest Statistic Value = {}\n'.format(
             self.name,
-            round(self.min_age, Asad.ROUND_DIGITS),
+            self.min_age,
+            # Round for pretty output
+            # round(self.min_age, Asad.ROUND_DIGITS),
             self.min_reddening,
             self.min_stat
         )
