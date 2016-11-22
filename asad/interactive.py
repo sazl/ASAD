@@ -838,6 +838,7 @@ class Run_Shell(Object_Shell):
 
     @prompt_command
     def observation_read(self):
+        print("----Press ENTER to choose set Default options----");     #Tells the user ENTER chooses the default option
         self.config['observation_input_directory'] = safe_default_input(
             'Observation path or directory',
             self.config['observation_input_directory'])
@@ -1127,9 +1128,9 @@ class Run_Shell(Object_Shell):
             self.plot_scatter_output()
         if parse_input_yn('Output residual plots', default=True):
             self.plot_residual_match_output()
-        if parse_input_yn('Output detailed residual plots', default=True):
+        if parse_input_yn('Output detailed residual plots', default=False): #Output detailed residual plots set to No.
             self.plot_residual_output()
-        if parse_input_yn('Output surface tile plot', default=True):
+        if parse_input_yn('Output surface tile plot', default=False):   #Output surface tile plot set to No.
             self.plot_surface_tile_output()
         self.update_config()
 
