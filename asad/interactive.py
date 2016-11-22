@@ -838,7 +838,6 @@ class Run_Shell(Object_Shell):
 
     @prompt_command
     def observation_read(self):
-        print("----Press ENTER to choose set Default options----");     #Tells the user ENTER chooses the default option
         self.config['observation_input_directory'] = safe_default_input(
             'Observation path or directory',
             self.config['observation_input_directory'])
@@ -1074,6 +1073,7 @@ class Run_Shell(Object_Shell):
     def cmdloop(self):
         observation_is_smoothed = False
         info_print("Assistant mode.")
+        info_print("----Press ENTER key to choose the pre-set Default Options----");   #Informs user that ENTER key chooses the default option.
 
         self.observation_read()
         if parse_input_yn('Observation set wavelength start (Angstroms)', default=True):
