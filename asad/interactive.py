@@ -341,7 +341,7 @@ class Base_Shell(Shell):
         except IndexError as index_error:
             error_print('invalid wavelength start, wavelength start not set')
             error_print(str(index_error))
-            pass
+            raise index_error
         except TypeError as type_error:
             error_print('wavelength start must be a float')
             raise type_error
@@ -358,7 +358,7 @@ class Base_Shell(Shell):
         except IndexError as index_error:
             error_print('invalid wavelength end, wavelength end not set')
             error_print(str(index_error))
-            pass
+            raise index_error
         except TypeError as type_error:
             error_print('wavelength end must be a float')
             raise type_error
@@ -375,7 +375,7 @@ class Base_Shell(Shell):
         except IndexError as index_error:
             error_print('invalid wavelength range, choosing entire range')
             error_print(str(index_error))
-            pass
+            raise index_error
         except TypeError as type_error:
             error_print('wavelength range must be floats')
             raise type_error
@@ -849,7 +849,10 @@ class Run_Shell(Object_Shell):
         self.config['observation_interpolation_step'] = safe_default_input(
             'Interpolation Step',
             self.config['observation_interpolation_step'])
-        self.observation.do_smoothen(self.config['observation_interpolation_step'])
+        try:
+            self.observation.do_smoothen(self.config['observation_interpolation_step'])
+        except:
+            self.observation_smoothen()
 
     @prompt_command
     def observation_smoothen_output(self):
@@ -871,11 +874,14 @@ class Run_Shell(Object_Shell):
         self.config['observation_reddening'] = safe_default_input(
             'Reddening',
             self.config['observation_reddening'])
-        self.observation.do_redshift(' '.join([
-            self.config['observation_reddening_start'],
-            self.config['observation_reddening'],
-            self.config['observation_reddening_step']]))
-
+        try:
+            self.observation.do_redshift(' '.join([
+                self.config['observation_reddening_start'],
+                self.config['observation_reddening'],
+                self.config['observation_reddening_step']]))
+        except:
+            self.observation_reddening() 
+       
     @prompt_command
     def observation_wavelength_start(self):
         print('Current Wavelength Range: ')
@@ -883,8 +889,11 @@ class Run_Shell(Object_Shell):
         self.config['observation_wavelength_start'] = safe_default_input(
             'Wavelength Start (Angstroms)',
             self.config['observation_wavelength_start'])
-        self.observation.do_set_wavelength_start(
-            self.config['observation_wavelength_start'])
+        try:
+            self.observation.do_set_wavelength_start(
+                self.config['observation_wavelength_start'])
+        except:
+            self.observation_wavelength_start()
 
     @prompt_command
     def observation_wavelength_end(self):
@@ -893,8 +902,11 @@ class Run_Shell(Object_Shell):
         self.config['observation_wavelength_end'] = safe_default_input(
             'Wavelength End (Angstroms)',
             self.config['observation_wavelength_end'])
-        self.observation.do_set_wavelength_end(
-            self.config['observation_wavelength_end'])
+        try:
+            self.observation.do_set_wavelength_end(
+                self.config['observation_wavelength_end'])
+        except:
+            self.observation_wavelength_end()
 
     @prompt_command
     def observation_wavelength_range(self):
@@ -906,9 +918,12 @@ class Run_Shell(Object_Shell):
         self.config['observation_wavelength_end'] = safe_default_input(
             'Wavelength End (Angstroms)',
             self.config['observation_wavelength_end'])
-        self.observation.do_set_wavelength_range('(%s, %s)' % (
-            self.config['observation_wavelength_start'],
-            self.config['observation_wavelength_end']))
+        try:
+            self.observation.do_set_wavelength_range('(%s, %s)' % (
+                self.config['observation_wavelength_start'],
+                self.config['observation_wavelength_end']))
+        except:
+            self.observation_wavelength_range()
 
     @prompt_command
     def observation_normalize_wavelength(self):
