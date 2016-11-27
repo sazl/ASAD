@@ -597,11 +597,9 @@ class Asad(object):
         return unicode(fmt_str)
 
     def format_chosen(self):
-        fmt = '{:<80} {:>8.2f} {:>10f}\nTest Statistic Value = {}\n'.format(
+        fmt = '{:<80} {:>8.6f} {:>10f}\nTest Statistic Value = {}\n'.format(
             self.name,
             self.min_age,
-            # Round for pretty output
-            # round(self.min_age, Asad.ROUND_DIGITS),
             self.min_reddening,
             self.min_stat
         )
