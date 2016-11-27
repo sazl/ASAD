@@ -1073,6 +1073,7 @@ class Run_Shell(Object_Shell):
     def cmdloop(self):
         observation_is_smoothed = False
         info_print("Assistant mode.")
+        info_print("----Press ENTER key to choose the pre-set Default Options----");   #Informs user that ENTER key chooses the default option.
 
         self.observation_read()
         if parse_input_yn('Observation set wavelength start (Angstroms)', default=True):
@@ -1127,9 +1128,9 @@ class Run_Shell(Object_Shell):
             self.plot_scatter_output()
         if parse_input_yn('Output residual plots', default=True):
             self.plot_residual_match_output()
-        if parse_input_yn('Output detailed residual plots', default=True):
+        if parse_input_yn('Output detailed residual plots', default=False): #Output detailed residual plots set to No.
             self.plot_residual_output()
-        if parse_input_yn('Output surface tile plot', default=True):
+        if parse_input_yn('Output surface tile plot', default=False):   #Output surface tile plot set to No.
             self.plot_surface_tile_output()
         self.update_config()
 
