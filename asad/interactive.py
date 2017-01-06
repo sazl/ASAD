@@ -625,7 +625,7 @@ class Object_Shell(Base_Shell):
         except Exception as err:
             error_print(unicode(err))
             raise err
-
+    #test
     def do_plot_surface_error(self, arg, format=''):
         try:
             path = os.path.abspath(parse_args(arg, expected=1)[0])
@@ -737,7 +737,26 @@ class Run_Shell(Object_Shell):
 
     def update_config(self):
         self.config.write_config_file()
-
+        
+    @prompt_command
+    def previousAnalysisObservation(self):
+        print("Current Wavelength Range: ")
+        self.observation.do_wavelength_index( '(0,1) ')
+        self.observation.do_set_wavelength_start(self.config['observation_wavelength_start'])
+        if parse_yn(self.config['choices_smooth_observation']):
+            self.observation.do_smoothen(self.config['observation_interpolation_step'])
+        self.observation.do_set_wavelength_end(self.config['observation_wavelength_end'])
+        if parse_yn(self.config['choices_output_smoothed_observation']):
+            self.observation.do_write(self.config['observation_smoothed_output_directory'], prefix = 'smoothed_')
+        if parse_yn(self.config['choices_reddening_correction']):
+            self.observation.do_redshift(' '.join([self.config['observation_reddening_start'],
+                                                   self.config['observation_reddening'],
+                                                   self.config['observation_reddening_step']]))
+        if parse_yn(self.config['choices_normalize_wavelength']):
+            self.observation.do_normalize(self.config['observation_normalize_wavelength'])
+        if parse_yn(self.config['choices_output_observation']):
+            self.observation.do_write(self.config['observation_output_directory'],prefix = 'normalized_')
+            
     @prompt_command
     def model_read(self):
         model_format = safe_default_input(
@@ -1076,23 +1095,33 @@ class Run_Shell(Object_Shell):
         info_print("----Press ENTER key to choose the pre-set Default Options----");   #Informs user that ENTER key chooses the default option.
 
         self.observation_read()
-        if parse_input_yn('Observation set wavelength start (Angstroms)', default=True):
-            self.observation_wavelength_start()
-        if parse_input_yn('Smooth the observation', default=False):
-            self.observation_smoothen()
-            observation_is_smoothed = True
+        if parse_input_yn('Would you like to use the analysis made on the observation in the previous run?', default = False):
+            self.previousAnalysisObservation()
+            if parse_yn(self.config['choices_smooth_observation']):
+                observation_is_smoothed = True
+        else:
+            if parse_input_yn('Observation set wavelength start (Angstroms)', default=True):
+                self.observation_wavelength_start()
+            if parse_input_yn('Smooth the observation', default=False):
+                self.config['choices_smooth_observation'] = 'Y'
+                self.observation_smoothen()
+                observation_is_smoothed = True
 
-        if parse_input_yn('Observation set wavelength end (Angstroms)', default=True):
-            self.observation_wavelength_end()
-        if parse_input_yn('Output smoothed observations'):
-            self.observation_smoothen_output()
-        if parse_input_yn('Observation reddening correction', default=False): #Reddening Correction Default set to No.
-            self.observation_reddening()
+            if parse_input_yn('Observation set wavelength end (Angstroms)', default=True):
+                self.observation_wavelength_end()
+            if parse_input_yn('Output smoothed observations'):
+                self.config['choices_output_smoothed_observation'] 'Y'
+                self.observation_smoothen_output()
+            if parse_input_yn('Observation reddening correction', default=False): #Reddening Correction Default set to No.
+                self.config['choices_reddening_correction'] = 'Y'
+                self.observation_reddening()
 
-        if parse_input_yn('Observation normalize wavelength', default=True):
-            self.observation_normalize_wavelength()
-        if parse_input_yn('Output observations'):
-            self.observation_output()
+            if parse_input_yn('Observation normalize wavelength', default=True):
+                self.config['choices_normalize_wavelength'] = 'Y'
+                self.observation_normalize_wavelength()
+            if parse_input_yn('Output observations'):
+                self.config['choices_output_observation'] = 'Y'
+                self.observation_output()
 
         self.update_config()
         self.model_read()
