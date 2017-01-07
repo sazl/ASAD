@@ -756,7 +756,15 @@ class Run_Shell(Object_Shell):
             self.observation.do_normalize(self.config['observation_normalize_wavelength'])
         if parse_yn(self.config['choices_output_observation']):
             self.observation.do_write(self.config['observation_output_directory'],prefix = 'normalized_')
-            
+    
+    @prompt_command
+    def previousAnalysisModel(self):
+        self.model.do_set_age_start(self.config['model_age_start'])
+        self.model.do_set_age_step(self.config['model_age_step'])
+        if parse_yn(self.config['choices_smooth_model']):
+            self.model.interpolation_wavelength_start_no_obsv_smoothed()
+            self.model.do_smoothen(self.config['model_interpolation_step'])
+    
     @prompt_command
     def model_read(self):
         model_format = safe_default_input(
@@ -1125,16 +1133,21 @@ class Run_Shell(Object_Shell):
 
         self.update_config()
         self.model_read()
-        if parse_input_yn('Model set age start and age step'):
-            self.model_age_start_and_step()
-
-        if observation_is_smoothed:
-            self.model_interpolation_wavelength_start_2()
-            self.model_smoothen()
+        if parse_input_yn('Would you like to use the previous analysis made on the Model?',default = False):
+            self.previousAnalysisModel()
         else:
-            if parse_input_yn('Smooth the model', default=False):   #Smooth the model Default set to No.
-                self.model_interpolation_wavelength_start_no_obsv_smoothed()
-                self.model_smoothen_no_obsv_smoothed()
+            
+            if parse_input_yn('Model set age start and age step'):
+                self.model_age_start_and_step()
+
+            if observation_is_smoothed:
+                self.model_interpolation_wavelength_start_2()
+                self.model_smoothen()
+            else:
+                if parse_input_yn('Smooth the model', default=False):   #Smooth the model Default set to No.
+                    self.config['choices_smooth_model'] = 'Y'
+                    self.model_interpolation_wavelength_start_no_obsv_smoothed()
+                    self.model_smoothen_no_obsv_smoothed()
         self.model_wavelength_range()
         self.model_normalize_wavelength()
         if parse_input_yn('Output models'):
