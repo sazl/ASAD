@@ -766,6 +766,20 @@ class Run_Shell(Object_Shell):
             self.model.do_smoothen(self.config['model_interpolation_step'])
     
     @prompt_command
+    def previousAnalysisPlot(self):
+        if parse_yn(self.config['choices_output_surface_plots']):
+            self.plot_surface_output()
+        if parse_yn(self.config['choices_output_best_spectra_match_plots']):
+            self.plot_scatter_output()
+        if parse_yn(self.config['choices_output_residual_plots']):
+            self.plot_residual_match_output()
+        if parse_yn(self.config['choices_output_detailed_residual_plots']):
+            self.plot_residual_output()
+        if parse_yn(self.config['choices_output_surface_title_plot']):
+            self.plot_surface_title_output()
+    
+    
+    @prompt_command
     def model_read(self):
         model_format = safe_default_input(
             'Model Format (' + ', '.join(pyasad.Model.MODEL_FORMATS) + ')',
@@ -1161,19 +1175,24 @@ class Run_Shell(Object_Shell):
         self.object_calculate_chosen()
         if parse_input_yn('Output best Reddening/Age match', default=True):
             self.object_output_chosen()
-
-        self.plot_output_format()
         
-        if parse_input_yn('Output surface plots', default=True):
-            self.plot_surface_output()
-        if parse_input_yn('Output best spectra match plots', default=True):
-            self.plot_scatter_output()
-        if parse_input_yn('Output residual plots', default=True):
-            self.plot_residual_match_output()
-        if parse_input_yn('Output detailed residual plots', default=False): #Output detailed residual plots set to No.
-            self.plot_residual_output()
-        if parse_input_yn('Output surface tile plot', default=False):   #Output surface tile plot set to No.
-            self.plot_surface_tile_output()
+        if parse_input_yn('Would you like to use the previous analysis made on the Plots?', default = False):
+            self.previousAnalysisPlot()
+        else:
+            
+        
+            self.plot_output_format()
+        
+            if parse_input_yn('Output surface plots', default=True):
+                self.plot_surface_output()
+            if parse_input_yn('Output best spectra match plots', default=True):
+                self.plot_scatter_output()
+            if parse_input_yn('Output residual plots', default=True):
+                self.plot_residual_match_output()
+            if parse_input_yn('Output detailed residual plots', default=False): #Output detailed residual plots set to No.
+                self.plot_residual_output()
+            if parse_input_yn('Output surface tile plot', default=False):   #Output surface tile plot set to No.
+                self.plot_surface_tile_output()
         self.update_config()
 
 #==============================================================================
