@@ -1118,7 +1118,7 @@ class Run_Shell(Object_Shell):
             if parse_input_yn('Observation set wavelength end (Angstroms)', default=True):
                 self.observation_wavelength_end()
             if parse_input_yn('Output smoothed observations'):
-                self.config['choices_output_smoothed_observation'] 'Y'
+                self.config['choices_output_smoothed_observation'] = 'Y'
                 self.observation_smoothen_output()
             if parse_input_yn('Observation reddening correction', default=False): #Reddening Correction Default set to No.
                 self.config['choices_reddening_correction'] = 'Y'
@@ -1164,7 +1164,7 @@ class Run_Shell(Object_Shell):
 
         self.plot_output_format()
         
-        if parse_input_yn('Output surface plots', default=True):
+        if parse_input_yn('Output surface plots', default=False):
             self.plot_surface_output()
         if parse_input_yn('Output best spectra match plots', default=True):
             self.plot_scatter_output()
