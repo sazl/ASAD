@@ -769,6 +769,7 @@ class Run_Shell(Object_Shell):
             if parse_yn(self.config['choices_smooth_model']):
                 self.model_interpolation_wavelength_start_no_obsv_smoothed()
                 self.model_smoothen_no_obsv_smoothed()
+        self.object.do_calculate_chosen_model(self.config['object_test_statistic'])
     
     @prompt_command
     def model_read(self):
@@ -1168,6 +1169,7 @@ class Run_Shell(Object_Shell):
                     self.model_smoothen_no_obsv_smoothed()
                 else:
                     self.config['choices_smooth_model'] = 'N'
+            self.object_calculate_chosen()
         self.model_wavelength_range()
         self.model_normalize_wavelength()
         if parse_input_yn('Output models'):
@@ -1178,7 +1180,6 @@ class Run_Shell(Object_Shell):
         self.object_generate()
         if parse_input_yn('Output Reddening/Ages files'):
             self.object_output()
-        self.object_calculate_chosen()
         if parse_input_yn('Output best Reddening/Age match', default=True):
             self.object_output_chosen()
 
