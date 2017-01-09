@@ -741,7 +741,7 @@ class Run_Shell(Object_Shell):
     @prompt_command
     def previousAnalysisObservation(self):
         print("Current Wavelength Range: ")
-        self.observation.do_wavelength_index( '(0,1) ')
+        self.observation.do_wavelength_index('(0, -1)')
         self.observation.do_set_wavelength_start(self.config['observation_wavelength_start'])
         if parse_yn(self.config['choices_smooth_observation']):
             self.observation.do_smoothen(self.config['observation_interpolation_step'])
