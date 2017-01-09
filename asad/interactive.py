@@ -1114,22 +1114,32 @@ class Run_Shell(Object_Shell):
                 self.config['choices_smooth_observation'] = 'Y'
                 self.observation_smoothen()
                 observation_is_smoothed = True
+            else:
+                self.config['choices_smooth_observation'] = 'N'
 
             if parse_input_yn('Observation set wavelength end (Angstroms)', default=True):
                 self.observation_wavelength_end()
             if parse_input_yn('Output smoothed observations'):
                 self.config['choices_output_smoothed_observation'] = 'Y'
                 self.observation_smoothen_output()
+            else:
+                self.config['choices_output_smoothed_observation'] = 'N'
             if parse_input_yn('Observation reddening correction', default=False): #Reddening Correction Default set to No.
                 self.config['choices_reddening_correction'] = 'Y'
                 self.observation_reddening()
+            else:
+                self.config['choices_reddening_correction'] = 'N'
 
             if parse_input_yn('Observation normalize wavelength', default=True):
                 self.config['choices_normalize_wavelength'] = 'Y'
                 self.observation_normalize_wavelength()
+            else:
+                self.config['choices_normalize_wavelength'] = 'N'
             if parse_input_yn('Output observations'):
                 self.config['choices_output_observation'] = 'Y'
                 self.observation_output()
+            else:
+                 self.config['choices_output_observation'] = 'N'
 
         self.update_config()
         self.model_read()
@@ -1148,6 +1158,8 @@ class Run_Shell(Object_Shell):
                     self.config['choices_smooth_model'] = 'Y'
                     self.model_interpolation_wavelength_start_no_obsv_smoothed()
                     self.model_smoothen_no_obsv_smoothed()
+                else:
+                    self.config['choices_smooth_model'] = 'N'
         self.model_wavelength_range()
         self.model_normalize_wavelength()
         if parse_input_yn('Output models'):
