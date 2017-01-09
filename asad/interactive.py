@@ -759,8 +759,9 @@ class Run_Shell(Object_Shell):
     
     @prompt_command
     def previousAnalysisModel(self):
-        self.model.do_set_age_start(self.config['model_age_start'])
-        self.model.do_set_age_step(self.config['model_age_step'])
+        if parse_yn(self.config['choices_set_age_start_and_step']):
+            self.model.do_set_age_start(self.config['model_age_start'])
+            self.model.do_set_age_step(self.config['model_age_step'])
         if parse_yn(self.config['choices_smooth_observation']):
             self.model_interpolation_wavelength_start_2()
             self.model_smoothen()
@@ -1152,7 +1153,10 @@ class Run_Shell(Object_Shell):
         else:
             
             if parse_input_yn('Model set age start and age step'):
+                self.config['choices_set_age_start_and_step'] = 'Y'
                 self.model_age_start_and_step()
+            else:
+                self.config['choices_set_age_start_and_step'] = 'N'
 
             if observation_is_smoothed:
                 self.model_interpolation_wavelength_start_2()
