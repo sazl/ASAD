@@ -772,6 +772,25 @@ class Run_Shell(Object_Shell):
         self.object.do_calculate_chosen_model(self.config['object_test_statistic'])
     
     @prompt_command
+    def previousOutputs(self):
+        if parse_yn(self.config['choices_output_models']):
+            self.model_output()
+        if parse_yn(self.config['choices_output_reddening_age_files']):
+            self.object_output()
+        if parse_yn(self.config['choices_output_best_reddening_age_match']):
+            self.object_output_chosen()
+        if parse_yn(self.config['choices_output_surface_plots']):
+            self.plot_surface_output()
+        if parse_yn(self.config['choices_output_best_spectra_match_plots']):
+            self.plot_scatter_output()
+        if parse_yn(self.config['choices_output_residual_plots']):
+            self.plot_residual_match_output()
+        if parse_yn(self.config['choices_output_detailed_residual_plots']):
+            self.plot_residual_output()
+        if parse_yn(self.config['choices_output_surface_title_plot']):
+            self.plot_surface_title_output()
+    
+    @prompt_command
     def model_read(self):
         model_format = safe_default_input(
             'Model Format (' + ', '.join(pyasad.Model.MODEL_FORMATS) + ')',
@@ -1109,7 +1128,7 @@ class Run_Shell(Object_Shell):
         info_print("----Press ENTER key to choose the pre-set Default Options----");   #Informs user that ENTER key chooses the default option.
 
         self.observation_read()
-        if parse_input_yn('Would you like to use the analysis made on the observation in the previous run?', default = False):
+        if parse_input_yn('Would you like to use the analysis made on the observation in the previous run', default = False):
             self.previousAnalysisObservation()
             if parse_yn(self.config['choices_smooth_observation']):
                 observation_is_smoothed = True
@@ -1149,7 +1168,7 @@ class Run_Shell(Object_Shell):
 
         self.update_config()
         self.model_read()
-        if parse_input_yn('Would you like to use the previous analysis made on the Model?',default = False):
+        if parse_input_yn('Would you like to use the previous analysis made on the Model',default = False):
             self.previousAnalysisModel()
         else:
             
@@ -1172,29 +1191,59 @@ class Run_Shell(Object_Shell):
             self.object_calculate_chosen()
         self.model_wavelength_range()
         self.model_normalize_wavelength()
-        if parse_input_yn('Output models'):
-            self.model_output()
+        
 
         self.update_config()
 
         self.object_generate()
-        if parse_input_yn('Output Reddening/Ages files'):
-            self.object_output()
-        if parse_input_yn('Output best Reddening/Age match', default=True):
-            self.object_output_chosen()
-
-        self.plot_output_format()
         
-        if parse_input_yn('Output surface plots', default=False):
-            self.plot_surface_output()
-        if parse_input_yn('Output best spectra match plots', default=True):
-            self.plot_scatter_output()
-        if parse_input_yn('Output residual plots', default=True):
-            self.plot_residual_match_output()
-        if parse_input_yn('Output detailed residual plots', default=False): #Output detailed residual plots set to No.
-            self.plot_residual_output()
-        if parse_input_yn('Output surface tile plot', default=False):   #Output surface tile plot set to No.
-            self.plot_surface_tile_output()
+        if parse_input_yn('Would you like to get the same output as the previous run', default = False):
+            self.previousOutputs()
+        else:
+            if parse_input_yn('Output models'):
+                self.config['choices_output_models'] = 'Y'
+                self.model_output()
+            else:
+                self.config['choices_output_models'] = 'N'
+            if parse_input_yn('Output Reddening/Ages files'):
+                self.config['choices_output_reddening_age_files'] = 'Y'
+                self.object_output()
+            else:
+                self.config['choices_output_reddening_age_files'] = 'N'
+            if parse_input_yn('Output best Reddening/Age match', default=True):
+                self.config['choices_output_best_reddening_age_match'] = 'Y'
+                self.object_output_chosen()
+            else:
+                self.config['choices_output_best_reddening_age_match'] = 'N'
+
+            self.plot_output_format()
+        
+            if parse_input_yn('Output surface plots', default=False):
+                self.config['choices_output_surface_plots'] = 'Y'
+                self.plot_surface_output()
+            else:
+                self.config['choices_output_surface_plots'] = 'N'
+            if parse_input_yn('Output best spectra match plots', default=True):
+                self.config['choices_output_best_spectra_match_plots'] = 'Y'
+                self.plot_scatter_output()
+            else:
+                self.config['choices_output_best_spectra_match_plots'] = 'N'
+            if parse_input_yn('Output residual plots', default=True):
+                self.config['choices_output_residual_plots'] = 'Y'
+                self.plot_residual_match_output()
+            else:
+                self.config['choices_output_residual_plots'] = 'N'
+            if parse_input_yn('Output detailed residual plots', default=False): #Output detailed residual plots set to No.
+                self.config['choices_output_detailed_residual_plots'] = 'Y'
+                self.plot_residual_output()
+            else:
+                self.config['choices_output_detailed_residual_plots'] = 'N'
+            if parse_input_yn('Output surface tile plot', default=False):   #Output surface tile plot set to No.
+                self.config['choices_output_surface_title_plot'] = 'Y'
+                self.plot_surface_tile_output()
+            else:
+                self.config['choices_output_surface_title_plot'] = 'N'
+                
         self.update_config()
 
 #==============================================================================
