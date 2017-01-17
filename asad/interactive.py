@@ -747,7 +747,7 @@ class Run_Shell(Object_Shell):
             self.observation.do_smoothen(self.config['observation_interpolation_step'])
         self.observation.do_set_wavelength_end(self.config['observation_wavelength_end'])
         if parse_yn(self.config['choices_output_smoothed_observation']):
-            self.observation.do_write(self.config['observation_smoothed_output_directory'], prefix = 'smoothed_')
+            self.observation.do_write(self.config['observation_smoothen_output_directory'], prefix = 'smoothed_')
         if parse_yn(self.config['choices_reddening_correction']):
             self.observation.do_redshift(' '.join([self.config['observation_reddening_start'],
                                                    self.config['observation_reddening'],
