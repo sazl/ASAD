@@ -1124,6 +1124,7 @@ class Run_Shell(Object_Shell):
 
     def cmdloop(self):
         observation_is_smoothed = False
+        info_print("ASAD: Analyzer of Spectra for Age Determination")
         info_print("Assistant mode.")
         info_print("----Press ENTER key to choose the pre-set Default Options----");   #Informs user that ENTER key chooses the default option.
 
