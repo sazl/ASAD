@@ -1189,7 +1189,6 @@ class Run_Shell(Object_Shell):
                     self.model_smoothen_no_obsv_smoothed()
                 else:
                     self.config['choices_smooth_model'] = 'N'
-            self.object_calculate_chosen()
         self.model_wavelength_range()
         self.model_normalize_wavelength()
         
@@ -1211,6 +1210,7 @@ class Run_Shell(Object_Shell):
                 self.object_output()
             else:
                 self.config['choices_output_reddening_age_files'] = 'N'
+            self.object_calculate_chosen()
             if parse_input_yn('Output best Reddening/Age match', default=True):
                 self.config['choices_output_best_reddening_age_match'] = 'Y'
                 self.object_output_chosen()
