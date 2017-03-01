@@ -1190,7 +1190,9 @@ class Run_Shell(Object_Shell):
                 else:
                     self.config['choices_smooth_model'] = 'N'
         self.model_wavelength_range()
-        self.model_normalize_wavelength()
+        
+        if parse_yn(self.config['choices_normalize_wavelength']):   #Normalizing model based on the choice taken for Observation Normalization
+            self.model_normalize_wavelength()
         
 
         self.update_config()
