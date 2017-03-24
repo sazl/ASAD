@@ -783,19 +783,10 @@ class Run_Shell(Object_Shell):
         if parse_yn(self.config['choices_set_age_start_and_step']):
             self.model.do_set_age_start(self.config['model_age_start'])
             self.model.do_set_age_step(self.config['model_age_step'])
+            self.model_age_start_and_step()
         if parse_yn(self.config['choices_smooth_observation']):
             self.model_interpolation_wavelength_start_2()
             self.model_smoothen()
-        else:
-            if parse_yn(self.config['choices_smooth_model']):
-                self.model_interpolation_wavelength_start_no_obsv_smoothed()
-                self.model_smoothen_no_obsv_smoothed()
-        if parse_yn(self.config['choices_normalize_wavelength']):
-            if parse_yn(self.config['choices_wavelength_normalization']):
-                self.model.do_normalize(self.config['observation_normalize_wavelength'])
-            else:
-                self.model.do_normalize_average()
-        self.object.do_calculate_chosen_model(self.config['object_test_statistic'])
     
     @prompt_command
     def previousOutputs(self):
