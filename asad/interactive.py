@@ -274,6 +274,11 @@ class Base_Shell(Shell):
             self.values[i] = base.normalize(wavelength)
             ok_print('Normalized: {}'.format(base.name))
 
+    def do_normalize_average(self):     #Normalizing the fluxes using the average as a dividor.
+        for (i,base) in enumerate(self.values):
+            self.values[i] = base.normalize_average()
+            ok_print('Normalized: {}'.format(base.name))
+
     def do_name(self, arg):
         for base in self.values:
             pprint(base.name)
@@ -479,6 +484,19 @@ class Observation_Shell(Base_Shell):
             raise value_error
         except TypeError as type_error:
             error_print('Redshift: start, end and step must be floats')
+            raise type_error
+
+    def do_single_redshift(self,arg):
+        try:
+            [start] = parse_args(arg, expected=1,type=float)
+            for (i, observation) in enumerate(self.values):
+                self.values[i] = observation.single_reddening_shift(start)
+                ok_print('Reddening Corrected: {}'.format(observation.name))
+        except ValueError as value_error:
+            error_print('Redshift: start needed')
+            raise value_error
+        except TypeError as type_error:
+            error_print("Redshift: start must be a float")
             raise type_error
 
 #===============================================================================
@@ -753,7 +771,10 @@ class Run_Shell(Object_Shell):
                                                    self.config['observation_reddening'],
                                                    self.config['observation_reddening_step']]))
         if parse_yn(self.config['choices_normalize_wavelength']):
-            self.observation.do_normalize(self.config['observation_normalize_wavelength'])
+            if parse_yn(self.config['choices_wavelength_normalization']):  
+                self.observation.do_normalize(self.config['observation_normalize_wavelength'])
+            else:
+                self.observation.do_normalize_average()
         if parse_yn(self.config['choices_output_observation']):
             self.observation.do_write(self.config['observation_output_directory'],prefix = 'normalized_')
     
@@ -769,14 +790,20 @@ class Run_Shell(Object_Shell):
             if parse_yn(self.config['choices_smooth_model']):
                 self.model_interpolation_wavelength_start_no_obsv_smoothed()
                 self.model_smoothen_no_obsv_smoothed()
+        if parse_yn(self.config['choices_normalize_wavelength']):
+            if parse_yn(self.config['choices_wavelength_normalization']):
+                self.model.do_normalize(self.config['observation_normalize_wavelength'])
+            else:
+                self.model.do_normalize_average()
         self.object.do_calculate_chosen_model(self.config['object_test_statistic'])
     
     @prompt_command
     def previousOutputs(self):
-        if parse_yn(self.config['choices_output_models']):
-            self.model_output()
-        if parse_yn(self.config['choices_output_reddening_age_files']):
-            self.object_output()
+##        if parse_yn(self.config['choices_output_models']):
+##            self.model_output()
+##        if parse_yn(self.config['choices_output_reddening_age_files']):
+##            self.object_output()
+        self.object_calculate_chosen()
         if parse_yn(self.config['choices_output_best_reddening_age_match']):
             self.object_output_chosen()
         if parse_yn(self.config['choices_output_surface_plots']):
@@ -875,6 +902,10 @@ class Run_Shell(Object_Shell):
         self.model.do_normalize(self.config['observation_normalize_wavelength'])
 
     @prompt_command
+    def model_normalize_average(self):
+        self.model.do_normalize_average()
+
+    @prompt_command
     def model_output(self):
         self.config['model_output_directory'] = safe_default_input(
             'Output directory',
@@ -914,19 +945,25 @@ class Run_Shell(Object_Shell):
 
     @prompt_command
     def observation_reddening(self):
-        self.config['observation_reddening_start'] = safe_default_input(
-            'Reddening Start',
-            self.config['observation_reddening_start'])
-        self.config['observation_reddening_step'] = safe_default_input(
-            'Reddening Step',
-            self.config['observation_reddening_step'])
-        self.config['observation_reddening'] = safe_default_input(
-            'Reddening',
-            self.config['observation_reddening'])
-        self.observation.do_redshift(' '.join([
-            self.config['observation_reddening_start'],
-            self.config['observation_reddening'],
-            self.config['observation_reddening_step']]))
+        if parse_yn(self.config['choices_reddening_method']):
+            self.config['observation_reddening_start'] = safe_default_input(
+                'Reddening Start',
+                self.config['observation_reddening_start'])
+            self.config['observation_reddening_step'] = safe_default_input(
+                'Reddening Step',
+                self.config['observation_reddening_step'])
+            self.config['observation_reddening'] = safe_default_input(
+                'Reddening',
+                self.config['observation_reddening'])
+            self.observation.do_redshift(' '.join([
+                self.config['observation_reddening_start'],
+                self.config['observation_reddening'],
+                self.config['observation_reddening_step']]))
+        else:
+           self.config['observation_reddening'] = safe_default_input(
+                'Reddening',
+                self.config['observation_reddening'])
+           self.observation.do_single_redshift(self.config['observation_reddening'])
 
     @prompt_command
     def observation_wavelength_start(self):
@@ -968,6 +1005,10 @@ class Run_Shell(Object_Shell):
             'Wavelength (Angstroms)',
             self.config['observation_normalize_wavelength'])
         self.observation.do_normalize(self.config['observation_normalize_wavelength'])
+
+    @prompt_command
+    def observation_normalize_average(self):        #Doing average normalization on observation.
+        self.observation.do_normalize_average()
 
     @prompt_command
     def observation_output(self):
@@ -1152,15 +1193,67 @@ class Run_Shell(Object_Shell):
                 self.config['choices_output_smoothed_observation'] = 'N'
             if parse_input_yn('Observation reddening correction', default=False): #Reddening Correction Default set to No.
                 self.config['choices_reddening_correction'] = 'Y'
+                while True:
+                    print('-'*5 + "Reddening Correction" + '-'*5 + "\n1. Specify Range\n2. Specify Single Value\n")
+                    try:
+                        reddeningOption = int(raw_input("Choose option: "))
+                        if reddeningOption == 1:
+                            self.config["choices_reddening_method"] = 'Y'
+                            break
+                        elif reddeningOption == 2:
+                            self.config["choices_reddening_method"] = 'N'
+                            break
+                        else:
+                            error_print("Please choose an option from the menu")
+                    except TypeError as type_error:
+                        error_print("Enter a number value")
+                        
+                    except ValueError as value_error:
+                        error_print("Enter an integer value (1 or 2)")
+                        
                 self.observation_reddening()
             else:
                 self.config['choices_reddening_correction'] = 'N'
 
-            if parse_input_yn('Observation normalize wavelength', default=True):
+            if parse_input_yn('Observation normalize wavelength', default=True):    #Allowing the user to choose normalization option.
                 self.config['choices_normalize_wavelength'] = 'Y'
-                self.observation_normalize_wavelength()
+                print('Choose Normalization Option\n1. Normalize at Specific Wavelength.\n2. Normalize based on Average of Fluxes.')
+                while True:
+                    try:
+                        option = int(raw_input('Option [' + self.config['choices_average_flux'] + ']:  '))
+                    except Exception as e:
+                        option = 3
+                    if option == 1:
+                        self.config['choices_wavelength_normalization'] = 'Y'
+                        self.config['choices_average_normalization'] = 'N'
+                        self.config['chocies_average_flux'] = '1'
+                        self.observation_normalize_wavelength()
+                        break
+                    elif option == 2:
+                        self.config['choices_wavelength_normalization'] = 'N'
+                        self.config['choices_average_normalization'] = 'Y'
+                        self.config['choices_average_flux'] = '2'
+                        self.observation_normalize_average()
+                        break
+                    elif option == 3:
+                        if self.config['choices_average_flux'] == '1':
+                            self.observation_normalize_wavelength()
+                        else:
+                            self.observation_normalize_average()
+                        break
+                    else:
+                        error_print('Please choose a valid option!')
             else:
                 self.config['choices_normalize_wavelength'] = 'N'
+                    
+                
+                
+
+##            if parse_input_yn('Observation normalize wavelength', default=True):
+##                self.config['choices_normalize_wavelength'] = 'Y'
+##                self.observation_normalize_wavelength()
+##            else:
+##                self.config['choices_normalize_wavelength'] = 'N'
             if parse_input_yn('Output observations'):
                 self.config['choices_output_observation'] = 'Y'
                 self.observation_output()
@@ -1192,27 +1285,35 @@ class Run_Shell(Object_Shell):
         self.model_wavelength_range()
         
         if parse_yn(self.config['choices_normalize_wavelength']):   #Normalizing model based on the choice taken for Observation Normalization
-            self.model_normalize_wavelength()
+            if parse_yn(self.config['choices_wavelength_normalization']):
+                self.model_normalize_wavelength()
+            else:
+                self.model_normalize_average()
         
 
         self.update_config()
 
         self.object_generate()
         
+       # if parse_input_yn('Would you like to get the same output as the previous run', default = False):
+           # self.previousOutputs()
+        if parse_input_yn('Output models'):
+            self.config['choices_output_models'] = 'Y'
+            self.model_output()
+        else:
+            self.config['choices_output_models'] = 'N'
+        if parse_input_yn('Output Reddening/Ages files'):
+            self.config['choices_output_reddening_age_files'] = 'Y'
+            self.object_output()
+        else:
+            self.config['choices_output_reddening_age_files'] = 'N'
+
         if parse_input_yn('Would you like to get the same output as the previous run', default = False):
             self.previousOutputs()
         else:
-            if parse_input_yn('Output models'):
-                self.config['choices_output_models'] = 'Y'
-                self.model_output()
-            else:
-                self.config['choices_output_models'] = 'N'
-            if parse_input_yn('Output Reddening/Ages files'):
-                self.config['choices_output_reddening_age_files'] = 'Y'
-                self.object_output()
-            else:
-                self.config['choices_output_reddening_age_files'] = 'N'
+            
             self.object_calculate_chosen()
+            
             if parse_input_yn('Output best Reddening/Age match', default=True):
                 self.config['choices_output_best_reddening_age_match'] = 'Y'
                 self.object_output_chosen()

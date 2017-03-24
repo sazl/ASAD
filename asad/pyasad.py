@@ -2,6 +2,7 @@ from __future__ import print_function
 import copy, io, math, os, os.path, uuid
 import numpy as np
 from pprint import pprint
+from functools import reduce
 
 #===============================================================================
 
@@ -156,6 +157,15 @@ class Base(object):
         flux[index] = [1]
         result.name = self.name
         return result
+
+    def normalize_average(self):    #Dividing the fluxes with their average.
+        result = copy.deepcopy(self)
+        flux = result.flux.transpose()
+        averageFlux = reduce(lambda x,y: x + y, flux[:]) / len(flux)
+        flux[:] /= averageFlux
+        result.name = self.name
+        return result
+        
 
     def wavelength_str(self, start=None, end=None):
         wl = self.wavelength[start:end]
@@ -505,11 +515,26 @@ class Observation(Base):
         ])
         return flux.transpose()
 
+    def find_single_flux(self, start):  #Single Reddening
+        flux_initial = self.flux[0]
+        Z = self.find_xyz()[2]
+        R = start
+        flux = np.array([
+            (10**(0.4*3.2*Z[i]*R)) * flux_initial[i] for i in range(len(Z))
+        ])
+        return flux.transpose()
+
     def reddening_shift(self, start, end, step):
         result = copy.deepcopy(self)
         result.reddening_start = start
         result.reddening_step = step
         result.flux = self.find_flux(start, end, step)
+        return result
+
+    def single_reddening_shift(self, start):    #Single Reddening
+        result = copy.deepcopy(self)
+        result.reddening_start = start
+        result.flux = self.find_single_flux(start)
         return result
 
     def smoothen(self, interp, name='', step=0):
