@@ -1226,7 +1226,7 @@ class Run_Shell(Object_Shell):
                     if option == 1:
                         self.config['choices_wavelength_normalization'] = 'Y'
                         self.config['choices_average_normalization'] = 'N'
-                        self.config['chocies_average_flux'] = '1'
+                        self.config['choices_average_flux'] = '1'
                         self.observation_normalize_wavelength()
                         break
                     elif option == 2:
@@ -1275,13 +1275,13 @@ class Run_Shell(Object_Shell):
             if observation_is_smoothed:
                 self.model_interpolation_wavelength_start_2()
                 self.model_smoothen()
-            else:
-                if parse_input_yn('Smooth the model', default=False):   #Smooth the model Default set to No.
-                    self.config['choices_smooth_model'] = 'Y'
-                    self.model_interpolation_wavelength_start_no_obsv_smoothed()
-                    self.model_smoothen_no_obsv_smoothed()
-                else:
-                    self.config['choices_smooth_model'] = 'N'
+##            else:
+##                if parse_input_yn('Smooth the model', default=False):   #Smooth the model Default set to No.
+##                    self.config['choices_smooth_model'] = 'Y'
+##                    self.model_interpolation_wavelength_start_no_obsv_smoothed()
+##                    self.model_smoothen_no_obsv_smoothed()
+##                else:
+##                    self.config['choices_smooth_model'] = 'N'
         self.model_wavelength_range()
         
         if parse_yn(self.config['choices_normalize_wavelength']):   #Normalizing model based on the choice taken for Observation Normalization
