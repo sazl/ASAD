@@ -1,6 +1,8 @@
 # ASAD
 **A**nalyzer of **S**pectra for **A**ge **D**etermination
 
+**THIS PROJECT IS NO LONGER IN ACTIVE DEVELOPMENT**
+
 ## Requirements
 
 ASAD requires the following to run:
